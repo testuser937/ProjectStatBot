@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace StatBot.Commands
 {
     [NotShowInHelp]
+    [Serializable]
     public class Help : ITool
     {
         public string Description { get; set; }

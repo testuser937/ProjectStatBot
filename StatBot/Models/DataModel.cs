@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Bot.Schema;
 using StatBot.Database.PostgresRepositories;
 
@@ -29,20 +28,22 @@ namespace StatBot.Models
                 {
                     var db = new PostgresUserRepository();
 
-
-                    var hasUser = db.GetAll().Any(x => x.ChannelId == activity.ChannelId && x.UserId == activity.From.Id &&
+                    var user = db.GetAll().FirstOrDefault(x => x.ChannelId == activity.ChannelId && x.UserId == activity.From.Id &&
                                                  x.UserName == activity.From.Name);
-                    if (!hasUser)
+                    if (user == null)
                     {
                         db.Add(new User(activity));
                         db.Save();
+                    }
+                    else
+                    {
+                        return user;
                     }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
                 }
-
             }
             return null;
         }

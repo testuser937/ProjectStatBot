@@ -15,16 +15,12 @@ namespace StatBot
     public class EchoBot : IBot
     {
         /// <summary>
-        /// Every Conversation turn for our EchoBot will call this method. In here
-        /// the bot checks the Activty type to verify it's a message, bumps the 
-        /// turn conversation 'Turn' count, and then echoes the users typing
-        /// back to them. 
+        /// Every Conversation turn for our EchoBot will call this method.
         /// </summary>
         /// <param name="context">Turn scoped context containing all the data needed
         /// for processing this conversation turn. </param>        
         public async Task OnTurn(ITurnContext context)
         {
-            // This bot is only handling Messages
             if (context.Activity.Type == ActivityTypes.Message)
             {
                 if (!String.IsNullOrEmpty(context.Activity.Text))
@@ -56,6 +52,11 @@ namespace StatBot
                     if (tool != null)
                     {
                         context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace, str.Length - indexOfSpace) : String.Empty;
+                        if (user == null || (!user.IsAdmin && ((ITool)tool).IsAdmin))
+                        {
+                            await context.SendActivity(help.Run(context.Activity));
+                            return;
+                        }
                         await context.SendActivity(tool.Run(context.Activity));
                     }
                     else
