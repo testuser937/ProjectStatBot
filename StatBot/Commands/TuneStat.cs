@@ -3,10 +3,11 @@ using StatBot.Interfaces;
 using StatBot.Models;
 using System.Collections.Generic;
 using StatBot.Cards;
-
+using System;
 
 namespace StatBot.Commands
 {
+    [Serializable]
     public class TuneStat : ITool
     {
         public string Description { get; set; }

@@ -1,10 +1,12 @@
 ﻿using Microsoft.Bot.Schema;
 using StatBot.Interfaces;
 using StatBot.Models;
+using System;
 using System.Collections.Generic;
 
 namespace StatBot.Commands
 {
+    [Serializable]
     public class Stats : ITool
     {
         public string Description { get; set; }
@@ -16,7 +18,6 @@ namespace StatBot.Commands
             string StatNames = "";
             if (activity?.Conversation != null)
             {
-
                 foreach (var stat in DataModel.Statistics)
                 {
                     if (stat.IsActive)
