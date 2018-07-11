@@ -9,6 +9,7 @@ namespace StatBot.Models
     public class DataModel
     {
         private static List<User> _users;
+        private static List<Statistic> _stats;
 
         public static List<User> Users
         {
@@ -18,6 +19,16 @@ namespace StatBot.Models
                 return db.GetAll().ToList();
             }
             set { _users = value; }
+        }
+
+        public static List<Statistic> Statistics
+        {
+            get
+            {
+                var db = new PostgresStatsRepository();
+                return db.GetAll().ToList();
+            }
+            set { _stats = value; }
         }
 
         public static User RememberUser(Activity activity)
@@ -47,5 +58,6 @@ namespace StatBot.Models
             }
             return null;
         }
+
     }
 }
