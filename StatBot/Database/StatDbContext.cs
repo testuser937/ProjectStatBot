@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace StatBot.Database
 {
-    public class BotDbContext : DbContext
+    public class StatDbContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
+        public DbSet<Statistic> Statistics { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

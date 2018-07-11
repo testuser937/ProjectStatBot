@@ -25,47 +25,85 @@ namespace StatBot
             {
                 if (!String.IsNullOrEmpty(context.Activity.Text))
                 {
-                    var user = DataModel.RememberUser(context.Activity);
-                    List<ITool> _tools;
-                    _tools = new List<ITool>();
-
-                    var baseInterfaceType = typeof(ITool);
-                    var botCommands = Assembly.GetAssembly(baseInterfaceType)
-                        .GetTypes()
-                        .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ITool") != null);
-                    foreach (var botCommand in botCommands)
+                    var data = context.Activity.Text.Split(' ');
+                    int StatisticId = 0;
+                    string ParrentButtonType = "";
+                    string ButtonType = "";
+                    try
                     {
-                        _tools.Add((ITool)Activator.CreateInstance(botCommand));
+                        StatisticId = Convert.ToInt32(data[1]);
+                        ButtonType = data[0];
+                        ParrentButtonType = data[2];
                     }
+                    catch { }
 
-                    var str = context.Activity.Text.Trim();
-                    var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
-                    var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
-                    if (command[0] != '/')
+                    List<string> ButtonNames = new List<string> { "StatisticButton", "ActionButton" };
+                    if (ButtonNames.Contains(ButtonType))
                     {
-                        command = "/" + command;
-                    }
+                        List<ICard> _cards = new List<ICard>();
 
-                    var help = new Help();
+                        var baseInterfaceType_ = typeof(ICard);
+                        var botButtons = Assembly.GetAssembly(baseInterfaceType_)
+                            .GetTypes()
+                            .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ICard") != null);
 
-                    var tool = _tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
-                    if (tool != null)
-                    {
-                        context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace, str.Length - indexOfSpace) : String.Empty;
-                        if (user == null || (!user.IsAdmin && ((ITool)tool).IsAdmin))
+
+                        foreach (var botButton in botButtons)
                         {
-                            await context.SendActivity(help.Run(context.Activity));
-                            return;
+                            _cards.Add((ICard)Activator.CreateInstance(botButton, StatisticId, null,null));
                         }
-                        await context.SendActivity(tool.Run(context.Activity));
+
+                        var str_ = ButtonType;
+
+                        var card = _cards.FirstOrDefault(x => x.ButtonsName.Any(y => y.Equals(str_)));
+                        if (card != null)
+                        {
+                            await context.SendActivity(card.OnClick(context.Activity));
+                        }
                     }
                     else
                     {
-                        await context.SendActivity(help.Run(context.Activity));
+                        var user = DataModel.RememberUser(context.Activity);
+                        List<ITool> _tools = new List<ITool>();
+
+
+                        var baseInterfaceType = typeof(ITool);
+                        var botCommands = Assembly.GetAssembly(baseInterfaceType)
+                            .GetTypes()
+                            .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ITool") != null);
+                        foreach (var botCommand in botCommands)
+                        {
+                            _tools.Add((ITool)Activator.CreateInstance(botCommand));
+                        }
+
+                        var str = context.Activity.Text.Trim();
+                        var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
+                        var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
+                        if (command[0] != '/')
+                        {
+                            command = "/" + command;
+                        }
+
+                        var help = new Help();
+
+                        var tool = _tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
+                        if (tool != null)
+                        {
+                            context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
+                            if (user == null || (!user.IsAdmin && ((ITool)tool).IsAdmin))
+                            {
+                                await context.SendActivity(help.Run(context.Activity));
+                                return;
+                            }
+                            await context.SendActivity(tool.Run(context.Activity));
+                        }
+                        else
+                        {
+                            await context.SendActivity(help.Run(context.Activity));
+                        }
                     }
                 }
-
             }
         }
-    }    
+    }
 }
