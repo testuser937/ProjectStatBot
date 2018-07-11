@@ -9,11 +9,24 @@ using Microsoft.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using StatBot.Models;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Core.Extensions;
+using StatBot.Database.PostgresRepositories;
+
 
 namespace StatBot
 {
     public class EchoBot : IBot
     {
+        private readonly DialogSet dialogs;
+
+        public EchoBot()
+        {
+            dialogs = new DialogSet();
+            InitDialog();
+        }
+
+
         /// <summary>
         /// Every Conversation turn for our EchoBot will call this method.
         /// </summary>
@@ -23,6 +36,19 @@ namespace StatBot
         {
             if (context.Activity.Type == ActivityTypes.Message)
             {
+                var state = ConversationState<Dictionary<string, object>>.Get(context);
+                var dc = dialogs.CreateContext(context, state);
+                await dc.Continue();
+
+                if (!context.Responded)
+                {
+                    if (context.Activity.Text.ToLowerInvariant().Contains("/createstat"))
+                    {
+                        await dc.Begin("createStatDialig");
+                        return;
+                    }
+                }
+
                 if (!String.IsNullOrEmpty(context.Activity.Text))
                 {
                     var data = context.Activity.Text.Split(' ');
@@ -97,13 +123,119 @@ namespace StatBot
                             }
                             await context.SendActivity(tool.Run(context.Activity));
                         }
-                        else
-                        {
-                            await context.SendActivity(help.Run(context.Activity));
-                        }
+                        //else
+                        //{
+                        //    await context.SendActivity(help.Run(context.Activity));
+                        //}
                     }
                 }
             }
+        }
+
+        public void InitDialog()
+        {
+            dialogs.Add("createStatDialig", new WaterfallStep[]
+            {
+                async (dc, args, next) =>
+                {
+                    dc.ActiveDialog.State = new Dictionary<string, object>();
+                    // Prompt for the guest's name.
+
+                    await dc.Prompt("textPrompt1", "Введите имя статистики");
+                },
+                async(dc, args, next) =>
+                {
+                    dc.ActiveDialog.State["name"] = args["Value"];
+                    var userState = UserState<BotUserState>.Get(dc.Context);
+                    userState.statName = Convert.ToString(dc.ActiveDialog.State["name"]);
+
+                    //reservationDate = Convert.ToDateTime(dateTimeResult.Value);
+            
+                    // Ask for next info
+                    await dc.Prompt("textPrompt2", "Введите sql-запрос");
+
+                },
+                async(dc, args, next) =>
+                {
+                    dc.ActiveDialog.State["query"] = args["Value"];
+
+                            // Save UserName to userState
+                            var userState = UserState<BotUserState>.Get(dc.Context);
+                            userState.statQuery = Convert.ToString(dc.ActiveDialog.State["query"]);
+
+                    // Ask for next info
+                    await dc.Prompt("textPrompt3", "Введите шаблон сообщения");
+                },
+
+                async(dc, args, next) =>
+                {
+                    dc.ActiveDialog.State["message"] = args["Value"];
+
+                            // Save UserName to userState
+                            var userState = UserState<BotUserState>.Get(dc.Context);
+                            userState.statMessage = Convert.ToString(dc.ActiveDialog.State["message"]);
+
+
+                    await dc.Prompt("textPrompt4", "Активировать статистику?(да/нет)[да]");
+
+                },
+                async(dc, args, next) =>
+                {
+                    string isActive = args["Value"].ToString();
+
+
+                    var userState = UserState<BotUserState>.Get(dc.Context);
+                     if(isActive == "нет")
+                    {
+                        userState.statIsActive = false;
+                    }
+                    else
+                    {
+                        userState.statIsActive = true;
+                    }
+
+                    string msg = "Статистика создана - " +
+                    $"\nНазвание: {userState.statName} " +
+                    $"\nSQL-запрос: {userState.statQuery} " +
+                    $"\nСообщение: {userState.statMessage}" +
+                    $"\nАктивна: {userState.statIsActive}";
+                    await dc.Context.SendActivity(msg);
+                    // Ask for next info
+                    await dc.Prompt("textPrompt5", "Все верно?(да/нет)");
+
+                },
+                async(dc, args, next) =>
+                {
+                    string reply = args["Value"].ToString();
+                    if(reply.ToLower() == "да")
+                    {
+                        await dc.Context.SendActivity("Статистика успешно создана");
+                        await dc.End();
+
+                        var userState = UserState<BotUserState>.Get(dc.Context);
+                        var db = new PostgresStatsRepository();
+                        Statistic stat = new Statistic(userState.statName, userState.statMessage, userState.statQuery);
+                        db.Add(stat);
+                        db.Save();
+                    }
+                    else if(reply.ToLower() == "нет")
+                    {
+                        await dc.Begin("createStatDialig");
+
+                    }
+                    else
+                    {
+                        await dc.Context.SendActivity("Неверная команда. Попробуйте еще раз.\nДля создания" +
+                            " статистики наберите /createstat");
+                    }
+                }
+            });
+
+            dialogs.Add("textPrompt1", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            dialogs.Add("textPrompt2", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            dialogs.Add("textPrompt3", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            dialogs.Add("textPrompt4", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            dialogs.Add("textPrompt5", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
         }
     }
 }
