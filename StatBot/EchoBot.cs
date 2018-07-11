@@ -26,16 +26,19 @@ namespace StatBot
                 if (!String.IsNullOrEmpty(context.Activity.Text))
                 {
                     var data = context.Activity.Text.Split(' ');
-                    int Id = 0;
+                    int StatisticId = 0;
+                    string ParrentButtonType = "";
+                    string ButtonType = "";
                     try
                     {
-                        context.Activity.Text = data[0];
-                        Id = Convert.ToInt32(data[1]);
+                        StatisticId = Convert.ToInt32(data[1]);
+                        ButtonType = data[0];
+                        ParrentButtonType = data[2];
                     }
                     catch { }
 
-                    List<string> ButtonNames = new List<string> { "Unsubscribe", "Subscribe", "StatisticButton" };
-                    if (ButtonNames.Contains(context.Activity.Text))
+                    List<string> ButtonNames = new List<string> { "StatisticButton", "ActionButton" };
+                    if (ButtonNames.Contains(ButtonType))
                     {
                         List<ICard> _cards = new List<ICard>();
 
@@ -47,10 +50,10 @@ namespace StatBot
 
                         foreach (var botButton in botButtons)
                         {
-                            _cards.Add((ICard)Activator.CreateInstance(botButton, Id, null));
+                            _cards.Add((ICard)Activator.CreateInstance(botButton, StatisticId, null,null));
                         }
 
-                        var str_ = context.Activity.Text.Trim();
+                        var str_ = ButtonType;
 
                         var card = _cards.FirstOrDefault(x => x.ButtonsName.Any(y => y.Equals(str_)));
                         if (card != null)

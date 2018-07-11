@@ -1,13 +1,16 @@
-﻿using Microsoft.Bot.Schema;
-using StatBot.Interfaces;
-using StatBot.Models;
+﻿using System;
+using StatBot.Attributes;
 using System.Collections.Generic;
+using StatBot.Interfaces;
+using Microsoft.Bot.Schema;
+using StatBot.Models;
 using StatBot.Cards;
-
 
 namespace StatBot.Commands
 {
-    public class TuneStat : ITool
+    [NotShowInHelp]
+    [Serializable]
+    public class StatOnOff:ITool
     {
         public string Description { get; set; }
         public List<string> CommandsName { get; set; }
@@ -24,8 +27,7 @@ namespace StatBot.Commands
 
                 foreach (var stat in DataModel.Statistics)
                 {
-                    if (stat.IsActive)
-                        actions.Add(new StatisticButton(stat.Id, stat.Name,"Subs").Action);
+                    actions.Add(new StatisticButton(stat.Id, stat.Name, "TurnOffOn").Action);
                 }
 
                 Attachment a = new Attachment()
@@ -34,7 +36,7 @@ namespace StatBot.Commands
                 };
                 var heroCard = new HeroCard
                 {
-                    Title = "Список доступных статистик для настройки",
+                    Title = "Список статистик",
                     Buttons = actions,
                 };
 
@@ -44,13 +46,12 @@ namespace StatBot.Commands
             }
             return activity;
         }
-        public TuneStat()
-        {
-            Description = "Настройка статистик";
-            CommandsName = new List<string> { "/tunestat" };
-            IsAdmin = false;
-        }
 
+        public StatOnOff()
+        {
+            Description = "Включение\\Выключение статистик";
+            CommandsName = new List<string> { "/statonoff" };
+            IsAdmin = true;
+        }
     }
 }
-
