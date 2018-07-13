@@ -9,11 +9,24 @@ using Microsoft.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using StatBot.Models;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Core.Extensions;
+using StatBot.Database.PostgresRepositories;
+
 
 namespace StatBot
 {
     public class EchoBot : IBot
     {
+        private readonly DialogSet dialogs;
+
+        public EchoBot()
+        {
+            dialogs = new DialogSet();
+            InitDialog();
+        }
+
+
         /// <summary>
         /// Every Conversation turn for our EchoBot will call this method.
         /// </summary>
@@ -23,49 +36,206 @@ namespace StatBot
         {
             if (context.Activity.Type == ActivityTypes.Message)
             {
-                if (!String.IsNullOrEmpty(context.Activity.Text))
+                var state = ConversationState<Dictionary<string, object>>.Get(context);
+                var dc = dialogs.CreateContext(context, state);
+                await dc.Continue();
+
+                if (!context.Responded)
                 {
-                    var user = DataModel.RememberUser(context.Activity);
-                    List<ITool> _tools;
-                    _tools = new List<ITool>();
-
-                    var baseInterfaceType = typeof(ITool);
-                    var botCommands = Assembly.GetAssembly(baseInterfaceType)
-                        .GetTypes()
-                        .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ITool") != null);
-                    foreach (var botCommand in botCommands)
+                    if (context.Activity.Text.ToLowerInvariant().Contains("/createstat"))
                     {
-                        _tools.Add((ITool)Activator.CreateInstance(botCommand));
-                    }
-
-                    var str = context.Activity.Text.Trim();
-                    var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
-                    var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
-                    if (command[0] != '/')
-                    {
-                        command = "/" + command;
-                    }
-
-                    var help = new Help();
-
-                    var tool = _tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
-                    if (tool != null)
-                    {
-                        context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace, str.Length - indexOfSpace) : String.Empty;
-                        if (user == null || (!user.IsAdmin && ((ITool)tool).IsAdmin))
-                        {
-                            await context.SendActivity(help.Run(context.Activity));
-                            return;
-                        }
-                        await context.SendActivity(tool.Run(context.Activity));
-                    }
-                    else
-                    {
-                        await context.SendActivity(help.Run(context.Activity));
+                        await dc.Begin("createStatDialig");
+                        return;
                     }
                 }
 
+                if (!String.IsNullOrEmpty(context.Activity.Text))
+                {
+                    var data = context.Activity.Text.Split(' ');
+                    int StatisticId = 0;
+                    string ParrentButtonType = "";
+                    string ButtonType = "";
+                    try
+                    {
+                        StatisticId = Convert.ToInt32(data[1]);
+                        ButtonType = data[0];
+                        ParrentButtonType = data[2];
+                    }
+                    catch { }
+
+                    List<string> ButtonNames = new List<string> { "StatisticButton", "ActionButton" };
+                    if (ButtonNames.Contains(ButtonType))
+                    {
+                        List<ICard> _cards = new List<ICard>();
+
+                        var baseInterfaceType_ = typeof(ICard);
+                        var botButtons = Assembly.GetAssembly(baseInterfaceType_)
+                            .GetTypes()
+                            .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ICard") != null);
+
+
+                        foreach (var botButton in botButtons)
+                        {
+                            _cards.Add((ICard)Activator.CreateInstance(botButton, StatisticId, null,null));
+                        }
+
+                        var str_ = ButtonType;
+
+                        var card = _cards.FirstOrDefault(x => x.ButtonsName.Any(y => y.Equals(str_)));
+                        if (card != null)
+                        {
+                            await context.SendActivity(card.OnClick(context.Activity));
+                        }
+                    }
+                    else
+                    {
+                        var user = DataModel.RememberUser(context.Activity);
+                        List<ITool> _tools = new List<ITool>();
+
+
+                        var baseInterfaceType = typeof(ITool);
+                        var botCommands = Assembly.GetAssembly(baseInterfaceType)
+                            .GetTypes()
+                            .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ITool") != null);
+                        foreach (var botCommand in botCommands)
+                        {
+                            _tools.Add((ITool)Activator.CreateInstance(botCommand));
+                        }
+
+                        var str = context.Activity.Text.Trim();
+                        var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
+                        var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
+                        if (command[0] != '/')
+                        {
+                            command = "/" + command;
+                        }
+
+                        var help = new Help();
+
+                        var tool = _tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
+                        if (tool != null)
+                        {
+                            context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
+                            if (user == null || (!user.IsAdmin && ((ITool)tool).IsAdmin))
+                            {
+                                await context.SendActivity(help.Run(context.Activity));
+                                return;
+                            }
+                            await context.SendActivity(tool.Run(context.Activity));
+                        }
+                        //else
+                        //{
+                        //    await context.SendActivity(help.Run(context.Activity));
+                        //}
+                    }
+                }
             }
         }
-    }    
+
+        public void InitDialog()
+        {
+            dialogs.Add("createStatDialig", new WaterfallStep[]
+            {
+                async (dc, args, next) =>
+                {
+                    dc.ActiveDialog.State = new Dictionary<string, object>();
+                    // Prompt for the guest's name.
+
+                    await dc.Prompt("textPrompt1", "Введите имя статистики");
+                },
+                async(dc, args, next) =>
+                {
+                    dc.ActiveDialog.State["name"] = args["Value"];
+                    var userState = UserState<BotUserState>.Get(dc.Context);
+                    userState.statName = Convert.ToString(dc.ActiveDialog.State["name"]);
+
+                    //reservationDate = Convert.ToDateTime(dateTimeResult.Value);
+            
+                    // Ask for next info
+                    await dc.Prompt("textPrompt2", "Введите sql-запрос");
+
+                },
+                async(dc, args, next) =>
+                {
+                    dc.ActiveDialog.State["query"] = args["Value"];
+
+                            // Save UserName to userState
+                            var userState = UserState<BotUserState>.Get(dc.Context);
+                            userState.statQuery = Convert.ToString(dc.ActiveDialog.State["query"]);
+
+                    // Ask for next info
+                    await dc.Prompt("textPrompt3", "Введите шаблон сообщения");
+                },
+
+                async(dc, args, next) =>
+                {
+                    dc.ActiveDialog.State["message"] = args["Value"];
+
+                            // Save UserName to userState
+                            var userState = UserState<BotUserState>.Get(dc.Context);
+                            userState.statMessage = Convert.ToString(dc.ActiveDialog.State["message"]);
+
+
+                    await dc.Prompt("textPrompt4", "Активировать статистику?(да/нет)[да]");
+
+                },
+                async(dc, args, next) =>
+                {
+                    string isActive = args["Value"].ToString();
+
+
+                    var userState = UserState<BotUserState>.Get(dc.Context);
+                     if(isActive == "нет")
+                    {
+                        userState.statIsActive = false;
+                    }
+                    else
+                    {
+                        userState.statIsActive = true;
+                    }
+
+                    string msg = "Статистика создана - " +
+                    $"\nНазвание: {userState.statName} " +
+                    $"\nSQL-запрос: {userState.statQuery} " +
+                    $"\nСообщение: {userState.statMessage}" +
+                    $"\nАктивна: {userState.statIsActive}";
+                    await dc.Context.SendActivity(msg);
+                    // Ask for next info
+                    await dc.Prompt("textPrompt5", "Все верно?(да/нет)");
+
+                },
+                async(dc, args, next) =>
+                {
+                    string reply = args["Value"].ToString();
+                    if(reply.ToLower() == "да")
+                    {
+                        await dc.Context.SendActivity("Статистика успешно создана");
+                        await dc.End();
+
+                        var userState = UserState<BotUserState>.Get(dc.Context);
+                        var db = new PostgresStatsRepository();
+                        Statistic stat = new Statistic(userState.statName, userState.statMessage, userState.statQuery);
+                        db.Add(stat);
+                        db.Save();
+                    }
+                    else if(reply.ToLower() == "нет")
+                    {
+                        await dc.Begin("createStatDialig");
+
+                    }
+                    else
+                    {
+                        await dc.Context.SendActivity("Неверная команда. Попробуйте еще раз.\nДля создания" +
+                            " статистики наберите /createstat");
+                    }
+                }
+            });
+
+            dialogs.Add("textPrompt1", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            dialogs.Add("textPrompt2", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            dialogs.Add("textPrompt3", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            dialogs.Add("textPrompt4", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            dialogs.Add("textPrompt5", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+        }
+    }
 }

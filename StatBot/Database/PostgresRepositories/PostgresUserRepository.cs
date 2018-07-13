@@ -24,7 +24,7 @@ namespace StatBot.Database.PostgresRepositories
         public void Delete(int id)
         {
             var user = _context.Users.Find(id);
-            if(user != null)
+            if (user != null)
             {
                 _context.Users.Remove(user);
             }
