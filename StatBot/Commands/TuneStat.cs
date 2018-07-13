@@ -22,11 +22,14 @@ namespace StatBot.Commands
 
                 Attachment attachment;
                 var actions = new List<CardAction>();
+                EchoBot.ShowedButtons.Clear(); // удаляем из памяти все кнопки
 
                 foreach (var stat in DataModel.Statistics)
                 {
                     if (stat.IsActive)
-                        actions.Add(new StatisticButton(stat.Id, stat.Name,"Subs").Action);
+                    {
+                        actions.Add(new ActionButton(stat.Id, $"{stat.Id}.{stat.Name}", (int)Constants.ActionTypes.ShowSubs, Constants.ShowButtons).Action);
+                    }
                 }
 
                 Attachment a = new Attachment()
@@ -51,7 +54,5 @@ namespace StatBot.Commands
             CommandsName = new List<string> { "/tunestat" };
             IsAdmin = false;
         }
-
     }
 }
-

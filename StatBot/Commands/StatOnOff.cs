@@ -10,7 +10,7 @@ namespace StatBot.Commands
 {
     [NotShowInHelp]
     [Serializable]
-    public class StatOnOff:ITool
+    public class StatOnOff : ITool
     {
         public string Description { get; set; }
         public List<string> CommandsName { get; set; }
@@ -24,10 +24,11 @@ namespace StatBot.Commands
 
                 Attachment attachment;
                 var actions = new List<CardAction>();
+                EchoBot.ShowedButtons.Clear(); // удаляем из памяти все кнопки
 
                 foreach (var stat in DataModel.Statistics)
                 {
-                    actions.Add(new StatisticButton(stat.Id, stat.Name, "TurnOffOn").Action);
+                    actions.Add(new ActionButton(stat.Id, $"{stat.Id}.{stat.Name}", (int)Constants.ActionTypes.ShowTurn, Constants.ShowButtons).Action);
                 }
 
                 Attachment a = new Attachment()

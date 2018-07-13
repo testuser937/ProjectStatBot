@@ -12,14 +12,14 @@ using StatBot.Models;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Core.Extensions;
 using StatBot.Database.PostgresRepositories;
-
+using StatBot.Cards;
 
 namespace StatBot
 {
     public class EchoBot : IBot
     {
         private readonly DialogSet dialogs;
-
+        public static List<ActionButton> ShowedButtons = new List<ActionButton>();
         public EchoBot()
         {
             dialogs = new DialogSet();
@@ -51,41 +51,20 @@ namespace StatBot
 
                 if (!String.IsNullOrEmpty(context.Activity.Text))
                 {
-                    var data = context.Activity.Text.Split(' ');
-                    int StatisticId = 0;
-                    string ParrentButtonType = "";
-                    string ButtonType = "";
-                    try
+                    var a = context.Activity.Text.Split(' ');
+                    if (a[0].Equals("ButtonClick") && a.Length == 3)
                     {
-                        StatisticId = Convert.ToInt32(data[1]);
-                        ButtonType = data[0];
-                        ParrentButtonType = data[2];
-                    }
-                    catch { }
-
-                    List<string> ButtonNames = new List<string> { "StatisticButton", "ActionButton" };
-                    if (ButtonNames.Contains(ButtonType))
-                    {
-                        List<ICard> _cards = new List<ICard>();
-
-                        var baseInterfaceType_ = typeof(ICard);
-                        var botButtons = Assembly.GetAssembly(baseInterfaceType_)
-                            .GetTypes()
-                            .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ICard") != null);
-
-
-                        foreach (var botButton in botButtons)
+                        int Id = Convert.ToInt32(a[1]);
+                        int ButtonAction = Convert.ToInt32(a[2]);
+                        for (int i = 0; i < ShowedButtons.Count; i++)
                         {
-                            _cards.Add((ICard)Activator.CreateInstance(botButton, StatisticId, null,null));
+                            if (ShowedButtons[i].buttonSettings.Statistic_Id == Id && ShowedButtons[i].buttonSettings.ActionType == ButtonAction)
+                            {
+                                await context.SendActivity(ShowedButtons[i].OnClick(context.Activity));
+                                return;
+                            }
                         }
-
-                        var str_ = ButtonType;
-
-                        var card = _cards.FirstOrDefault(x => x.ButtonsName.Any(y => y.Equals(str_)));
-                        if (card != null)
-                        {
-                            await context.SendActivity(card.OnClick(context.Activity));
-                        }
+                        await context.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rзаново наберите команду \tunestat");
                     }
                     else
                     {
