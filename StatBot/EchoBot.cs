@@ -69,47 +69,58 @@ namespace StatBot
                     var a = context.Activity.Text.Split(' ');
                     if (a[0].Equals("ButtonClick") && a.Length == 3)
                     {
-                        int Id = Convert.ToInt32(a[1]);
-                        int ButtonAction = Convert.ToInt32(a[2]);
-                        for (int i = 0; i < ShowedButtons.Count; i++)
-                        {
-                            if (ShowedButtons[i].BtnSettings.Statistic_Id == Id && ShowedButtons[i].BtnSettings.ActionType == ButtonAction)
-                            {
-                                await context.SendActivity(ShowedButtons[i].OnClick(context.Activity));
-                                return;
-                            }
-                        }
-                        await context.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rЗаново наберите команду /tunestat");
+                        await DoButtonAction(a,context);
                     }
                     else
                     {
-                        var str = context.Activity.Text.Trim();
-                        var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
-                        var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
-                        if (command[0] != '/')
-                        {
-                            command = "/" + command;
-                        }
-
-                        var help = new Help();
-
-                        var tool = _tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
-                        if (tool != null)
-                        {
-                            context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
-                            if (user == null || (!user.IsAdmin && (tool).IsAdmin))
-                            {
-                                await context.SendActivity(help.Run(context.Activity));
-                                return;
-                            }
-                            await context.SendActivity(tool.Run(context.Activity));
-                        }
-                        else if (!IsDialogStart)
-                        {
-                            await context.SendActivity(help.Run(context.Activity));
-                        }
+                        await DoCommand(context, user);
                     }
                 }
+            }
+        }
+
+        public async Task DoButtonAction(string[] a, ITurnContext context)
+        {
+            int Id = Convert.ToInt32(a[1]);
+            int ButtonAction = Convert.ToInt32(a[2]);
+            for (int i = 0; i < ShowedButtons.Count; i++)
+            {
+                if (ShowedButtons[i].BtnSettings.Statistic_Id == Id && ShowedButtons[i].BtnSettings.ActionType == ButtonAction)
+                {
+                    await context.SendActivity(ShowedButtons[i].OnClick(context.Activity));
+                    return;
+                }
+            }
+            await context.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rЗаново наберите команду /tunestat");
+        }
+
+
+        public async Task DoCommand(ITurnContext context,User user)
+        {
+            var str = context.Activity.Text.Trim();
+            var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
+            var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
+            if (command[0] != '/')
+            {
+                command = "/" + command;
+            }
+
+            var help = new Help();
+
+            var tool = _tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
+            if (tool != null)
+            {
+                context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
+                if (user == null || (!user.IsAdmin && (tool).IsAdmin))
+                {
+                    await context.SendActivity(help.Run(context.Activity));
+                    return;
+                }
+                await context.SendActivity(tool.Run(context.Activity));
+            }
+            else if (!IsDialogStart)
+            {
+                await context.SendActivity(help.Run(context.Activity));
             }
         }
 

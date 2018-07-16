@@ -85,7 +85,7 @@ namespace StatBot.Cards
                         {
                             stat.Subscribers.Add(userId);
                             bd.Update(stat);
-                            activity.Text = $"Вы подписались на статистикиу №{ID}";
+                            activity.Text = $"Вы подписались на статистикиу";
                         }
                         else
                             activity.Text = "Вы уже подписаны на эту статистикиу";
@@ -99,7 +99,7 @@ namespace StatBot.Cards
                         {
                             stat.Subscribers.Remove(userId);
                             bd.Update(stat);
-                            activity.Text = $"Вы отписались от статистики №{ID}";
+                            activity.Text = $"Вы отписались от статистики";
                         }
                         else
                             activity.Text = "Вы уже отписаны от этой статистики";
@@ -136,9 +136,13 @@ namespace StatBot.Cards
             }
 
             activity.Text = null;
+
+            var bd = new PostgresStatsRepository();
+            var stat = bd.GetById(ID);
+
             var heroCard = new HeroCard
             {
-                Title = "Настройка статистики № " + _buttonSettings.Statistic_Id,
+                Title = "Настройка статистики: "+ stat.Name,
                 Buttons = actions,
             };
             attachment = heroCard.ToAttachment();

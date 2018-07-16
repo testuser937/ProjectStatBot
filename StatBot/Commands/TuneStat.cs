@@ -28,7 +28,7 @@ namespace StatBot.Commands
                 {
                     if (stat.IsActive)
                     {
-                        actions.Add(new ActionButton(stat.Id, $"{stat.Id}.{stat.Name}", (int)Constants.ActionTypes.ShowSubs, Constants.ShowButtons).Action);
+                        actions.Add(new ActionButton(stat.Id, $"{stat.Name}", (int)Constants.ActionTypes.ShowSubs, Constants.ShowButtons).Action);
                     }
                 }
                 
