@@ -5,6 +5,7 @@ using StatBot.Interfaces;
 using Microsoft.Bot.Schema;
 using StatBot.Models;
 using StatBot.Cards;
+using System.Text;
 
 namespace StatBot.Commands
 {
@@ -28,8 +29,8 @@ namespace StatBot.Commands
 
                 foreach (var stat in DataModel.Statistics)
                 {
-                    if (!stat.IsActive)
-                        stat.Name += " (Выключена)";
+                    if (!stat.IsActive)                        
+                        stat.Name += " (Off)";
                     actions.Add(new ActionButton(stat.Id, $"{stat.Id}.{stat.Name}", (int)Constants.ActionTypes.ShowTurn, Constants.ShowButtons).Action);
                 }
 

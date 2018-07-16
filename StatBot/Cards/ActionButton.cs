@@ -22,7 +22,7 @@ namespace StatBot.Cards
             public int Statistic_Id { get => _statistic_Id; set => _statistic_Id = value; }
             public string ButtonTittle { get => _buttonTittle; set => _buttonTittle = value; }
             public bool IsStatistic { get => _isStatistic; set => _isStatistic = value; }
-            
+
             public ButtonSettings(int Type, int Id, string Tittle, bool IsStat)
             {
                 _actionType = Type;
@@ -31,17 +31,18 @@ namespace StatBot.Cards
                 _isStatistic = IsStat;
             }
         }
-        public ButtonSettings buttonSettings;
+        private ButtonSettings _buttonSettings;
+        public ButtonSettings BtnSettings { get => _buttonSettings; set => _buttonSettings = value; }
 
         public Activity OnClick(Activity activity)
         {
-            if (!buttonSettings.IsStatistic)
+            if (!_buttonSettings.IsStatistic)
             {
-                 return DoAction(activity, buttonSettings.Statistic_Id);
+                return DoAction(activity, _buttonSettings.Statistic_Id);
             }
             else
             {
-                return ShowButtons(activity, buttonSettings.Statistic_Id);
+                return ShowButtons(activity, _buttonSettings.Statistic_Id);
             }
         }
 
@@ -50,7 +51,7 @@ namespace StatBot.Cards
             var bd = new PostgresStatsRepository();
             var stat = bd.GetById(ID);
 
-            switch (buttonSettings.ActionType)
+            switch (_buttonSettings.ActionType)
             {
                 case ((int)Constants.ActionTypes.TurnOn):
                     {
@@ -112,7 +113,7 @@ namespace StatBot.Cards
                         break;
                     }
             }
-            
+
             bd.Save();
             return activity;
         }
@@ -122,12 +123,12 @@ namespace StatBot.Cards
             activity.Attachments = new List<Attachment>();
             Attachment attachment;
             var actions = new List<CardAction>();
-            if (buttonSettings.ActionType == (int)Constants.ActionTypes.ShowTurn)
+            if (_buttonSettings.ActionType == (int)Constants.ActionTypes.ShowTurn)
             {
                 actions.Add(new ActionButton(ID, Constants.TurnOn, (int)Constants.ActionTypes.TurnOn, Constants.NotShowButtons).Action);
                 actions.Add(new ActionButton(ID, Constants.TurnOff, (int)Constants.ActionTypes.TurnOff, Constants.NotShowButtons).Action);
             }
-            else if (buttonSettings.ActionType == (int)Constants.ActionTypes.ShowSubs)
+            else if (_buttonSettings.ActionType == (int)Constants.ActionTypes.ShowSubs)
             {
                 actions.Add(new ActionButton(ID, Constants.Subscribe, (int)Constants.ActionTypes.Subscribe, Constants.NotShowButtons).Action);
                 actions.Add(new ActionButton(ID, Constants.Unsubscribe, (int)Constants.ActionTypes.Unsubscribe, Constants.NotShowButtons).Action);
@@ -137,7 +138,7 @@ namespace StatBot.Cards
             activity.Text = null;
             var heroCard = new HeroCard
             {
-                Title = "Настройка статистики № " + buttonSettings.Statistic_Id,
+                Title = "Настройка статистики № " + _buttonSettings.Statistic_Id,
                 Buttons = actions,
             };
             attachment = heroCard.ToAttachment();
@@ -154,8 +155,8 @@ namespace StatBot.Cards
         /// <param name="IsStat">Определяет может ли кнопка отображать кнопки</param>
         public ActionButton(int Id, string ButtonTittle, int ActionType, bool IsStat)
         {
-            buttonSettings = new ButtonSettings(ActionType, Id, ButtonTittle, IsStat);
-            Action = new CardAction(ActionTypes.PostBack, ButtonTittle, null, ActionType.ToString(), null, $"ButtonClick {Id} {buttonSettings.ActionType}");
+            _buttonSettings = new ButtonSettings(ActionType, Id, ButtonTittle, IsStat);
+            Action = new CardAction(ActionTypes.PostBack, ButtonTittle, null, ActionType.ToString(), null, $"ButtonClick {Id} {_buttonSettings.ActionType}");
             EchoBot.ShowedButtons.Add(this);
         }
     }

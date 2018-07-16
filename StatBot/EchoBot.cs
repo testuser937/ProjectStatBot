@@ -20,7 +20,10 @@ namespace StatBot
     {
         private readonly DialogSet dialogs;
 
-        public static List<ActionButton> ShowedButtons = new List<ActionButton>();
+        private static List<ActionButton> showedButtons = new List<ActionButton>();
+
+        public static List<ActionButton> ShowedButtons { get => showedButtons; set => showedButtons = value; }
+
         public EchoBot()
         {
             dialogs = new DialogSet();
@@ -59,7 +62,7 @@ namespace StatBot
                         int ButtonAction = Convert.ToInt32(a[2]);
                         for (int i = 0; i < ShowedButtons.Count; i++)
                         {
-                            if (ShowedButtons[i].buttonSettings.Statistic_Id == Id && ShowedButtons[i].buttonSettings.ActionType == ButtonAction)
+                            if (ShowedButtons[i].BtnSettings.Statistic_Id == Id && ShowedButtons[i].BtnSettings.ActionType == ButtonAction)
                             {
                                 await context.SendActivity(ShowedButtons[i].OnClick(context.Activity));
                                 return;

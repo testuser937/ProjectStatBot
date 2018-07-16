@@ -47,15 +47,13 @@ namespace StatBot.Database.PostgresRepositories
         }
 
         public void Save()
-        {
-            
+        {            
             _context.SaveChanges();
         }
 
         public void Update(User user)
         {
             _context.Entry(user).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-
         }
     }
 }
