@@ -7,7 +7,7 @@ namespace StatBot.Database.PostgresRepositories
 {
     public class PostgresUserRepository : IRepository<User>
     {
-        private BotDbContext _context;
+        private readonly BotDbContext _context;
         public PostgresUserRepository()
         {
             _context = new BotDbContext();

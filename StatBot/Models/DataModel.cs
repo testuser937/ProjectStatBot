@@ -6,7 +6,7 @@ using StatBot.Database.PostgresRepositories;
 
 namespace StatBot.Models
 {
-    public class DataModel
+    public static class DataModel
     {
         private static List<User> _users;
         private static List<Statistic> _stats;

@@ -19,8 +19,9 @@ namespace StatBot
     public class EchoBot : IBot
     {
         private readonly DialogSet dialogs;
-
+        private static bool IsDialogStart = false;
         private static List<ActionButton> showedButtons = new List<ActionButton>();
+        private static List<ITool> _tools = new List<ITool>();
 
         public static List<ActionButton> ShowedButtons { get => showedButtons; set => showedButtons = value; }
 
@@ -28,6 +29,15 @@ namespace StatBot
         {
             dialogs = new DialogSet();
             InitDialog();
+
+            var baseInterfaceType = typeof(ITool);
+            var botCommands = Assembly.GetAssembly(baseInterfaceType)
+                .GetTypes()
+                .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ITool") != null);
+            foreach (var botCommand in botCommands)
+            {
+                _tools.Add((ITool)Activator.CreateInstance(botCommand));
+            }
         }
 
 
@@ -40,6 +50,7 @@ namespace StatBot
         {
             if (context.Activity.Type == ActivityTypes.Message)
             {
+                var user = DataModel.RememberUser(context.Activity);
                 var state = ConversationState<Dictionary<string, object>>.Get(context);
                 var dc = dialogs.CreateContext(context, state);
                 await dc.Continue();
@@ -68,23 +79,10 @@ namespace StatBot
                                 return;
                             }
                         }
-                        await context.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rзаново наберите команду /tunestat");
+                        await context.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rЗаново наберите команду /tunestat");
                     }
                     else
                     {
-                        var user = DataModel.RememberUser(context.Activity);
-                        List<ITool> _tools = new List<ITool>();
-
-
-                        var baseInterfaceType = typeof(ITool);
-                        var botCommands = Assembly.GetAssembly(baseInterfaceType)
-                            .GetTypes()
-                            .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ITool") != null);
-                        foreach (var botCommand in botCommands)
-                        {
-                            _tools.Add((ITool)Activator.CreateInstance(botCommand));
-                        }
-
                         var str = context.Activity.Text.Trim();
                         var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
                         var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
@@ -99,17 +97,17 @@ namespace StatBot
                         if (tool != null)
                         {
                             context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
-                            if (user == null || (!user.IsAdmin && ((ITool)tool).IsAdmin))
+                            if (user == null || (!user.IsAdmin && (tool).IsAdmin))
                             {
                                 await context.SendActivity(help.Run(context.Activity));
                                 return;
                             }
                             await context.SendActivity(tool.Run(context.Activity));
                         }
-                        //else
-                        //{
-                        //    await context.SendActivity(help.Run(context.Activity));
-                        //}
+                        else if (!IsDialogStart)
+                        {
+                            await context.SendActivity(help.Run(context.Activity));
+                        }
                     }
                 }
             }
@@ -131,8 +129,6 @@ namespace StatBot
                     dc.ActiveDialog.State["name"] = args["Value"];
                     var userState = UserState<BotUserState>.Get(dc.Context);
                     userState.statName = Convert.ToString(dc.ActiveDialog.State["name"]);
-
-                    //reservationDate = Convert.ToDateTime(dateTimeResult.Value);
             
                     // Ask for next info
                     await dc.Prompt("textPrompt2", "Введите sql-запрос");
