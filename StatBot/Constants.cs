@@ -7,7 +7,7 @@ namespace StatBot
 {
     public class Constants
     {
-        public enum ActionTypes : int
+        public enum ActionTypes
         {   /// <summary>
             /// Включение статистики админом
             /// </summary>

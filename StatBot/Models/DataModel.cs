@@ -16,6 +16,7 @@ namespace StatBot.Models
             get
             {
                 var db = new PostgresUserRepository();
+                
                 return db.GetAll().ToList();
             }
             set { _users = value; }
@@ -26,7 +27,9 @@ namespace StatBot.Models
             get
             {
                 var db = new PostgresStatsRepository();
-                return db.GetAll().ToList();
+                var nonsorted = db.GetAll().ToList();
+                IEnumerable<Statistic> result = nonsorted.OrderBy(x => x.Id);
+                return result.ToList();
             }
             set { _stats = value; }
         }

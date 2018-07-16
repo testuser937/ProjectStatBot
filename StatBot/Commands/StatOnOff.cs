@@ -28,13 +28,11 @@ namespace StatBot.Commands
 
                 foreach (var stat in DataModel.Statistics)
                 {
+                    if (!stat.IsActive)
+                        stat.Name += " (Выключена)";
                     actions.Add(new ActionButton(stat.Id, $"{stat.Id}.{stat.Name}", (int)Constants.ActionTypes.ShowTurn, Constants.ShowButtons).Action);
                 }
 
-                Attachment a = new Attachment()
-                {
-                    Content = actions,
-                };
                 var heroCard = new HeroCard
                 {
                     Title = "Список статистик",

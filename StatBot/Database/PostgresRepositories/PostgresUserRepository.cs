@@ -48,6 +48,7 @@ namespace StatBot.Database.PostgresRepositories
 
         public void Save()
         {
+            
             _context.SaveChanges();
         }
 

@@ -19,6 +19,7 @@ namespace StatBot
     public class EchoBot : IBot
     {
         private readonly DialogSet dialogs;
+
         public static List<ActionButton> ShowedButtons = new List<ActionButton>();
         public EchoBot()
         {
@@ -64,7 +65,7 @@ namespace StatBot
                                 return;
                             }
                         }
-                        await context.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rзаново наберите команду \tunestat");
+                        await context.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rзаново наберите команду /tunestat");
                     }
                     else
                     {
