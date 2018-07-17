@@ -42,7 +42,7 @@ namespace StatBot.Commands
                 if (!botCommand.GetCustomAttributes(typeof(NotShowInHelpAttribute)).Any())
                 {
                     var command = (ITool)Activator.CreateInstance(botCommand);
-                    result.Append($"{command.CommandsName.First()} - {command.Description}\n");
+                    result.Append($"{command.CommandsName.First()} - {command.Description}\n\r");
                 }
             }
             CommandText = result.ToString();

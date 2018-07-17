@@ -9,7 +9,7 @@ namespace StatBot.Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Username=postgres;Password=1234;Database=postgres");
+            optionsBuilder.UseNpgsql(Constants.ConnectionString);
         }
     }
 }

@@ -55,14 +55,11 @@ namespace StatBot
                 var dc = dialogs.CreateContext(context, state);
                 await dc.Continue();
 
-                if (!context.Responded)
+                if (!context.Responded && context.Activity.Text.ToLowerInvariant().Contains("/createstat"))
                 {
-                    if (context.Activity.Text.ToLowerInvariant().Contains("/createstat"))
-                    {
-                        await dc.Begin("createStatDialig");
-                        return;
-                    }
-                }
+                    await dc.Begin("createStatDialig");
+                    return;
+                }                
 
                 if (!String.IsNullOrEmpty(context.Activity.Text))
                 {

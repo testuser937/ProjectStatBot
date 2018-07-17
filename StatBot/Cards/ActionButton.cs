@@ -62,7 +62,7 @@ namespace StatBot.Cards
                             bd.Update(stat);
                         }
                         else
-                            activity.Text = $"Эта статистика уже включена";
+                            activity.Text = $"Cтатистика №{ID} уже включена";
                         break;
                     }
                 case ((int)Constants.ActionTypes.TurnOff):
@@ -70,11 +70,11 @@ namespace StatBot.Cards
                         if (stat.IsActive)
                         {
                             stat.IsActive = false;
-                            activity.Text = $"Cтатистика № {ID} отключена.";
+                            activity.Text = $"Cтатистика №{ID} отключена.";
                             bd.Update(stat);
                         }
                         else
-                            activity.Text = $"Эта статистика уже выключена";
+                            activity.Text = $"Cтатистика №{ID} уже выключена";
                         break;
                     }
 

@@ -33,7 +33,7 @@ namespace StatBot.Database.PostgresRepositories
         public void Dispose()
         {
             _context.Dispose();
-            //GC.SuppressFinalize(this);
+            GC.SuppressFinalize(this);
         }
 
         public IEnumerable<User> GetAll()

@@ -72,6 +72,11 @@ namespace StatBot
         /// Кнопка при нажатии на нее будет отображать другие кнопки
         /// </summary>
         public const bool ShowButtons = true;
+        
+        /// <summary>
+        /// Строка подключения к БД
+        /// </summary>
+        public const string ConnectionString = "Host=localhost;Username=postgres;Password=1234;Database=postgres";
 
     }
 }
