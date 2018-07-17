@@ -76,7 +76,6 @@ namespace StatBot
         /// <summary>
         /// Строка подключения к БД
         /// </summary>
-        public const string ConnectionString = "Host=localhost;Username=postgres;Password=1234;Database=postgres";
-
+        public const string ConnectionString = "Host=;Username=;Password=;Database=";
     }
 }

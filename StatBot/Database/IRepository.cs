@@ -9,9 +9,9 @@ namespace StatBot.Database
     {
         IEnumerable<T> GetAll();
         T GetById(int id);
-        void Add(T o);
+        void Add(T obj);
 
-        void Update(T o);
+        void Update(T obj);
 
         void Delete(int id);
 

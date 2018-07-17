@@ -14,12 +14,12 @@ namespace StatBot.Database.PostgresRepositories
             _context = new StatDbContext();
         }
 
-        public void Add(Statistic stat)
+        public void Add(Statistic obj)
         {
             var count = GetAll().ToList().Count;
-            stat.Id = count + 1;
+            obj.Id = count + 1;
 
-            _context.Statistics.Add(stat);
+            _context.Statistics.Add(obj);
         }
 
         public void Delete(int id)
@@ -37,6 +37,14 @@ namespace StatBot.Database.PostgresRepositories
             GC.SuppressFinalize(this);
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_context != null) _context.Dispose();
+            }
+        }
+
         public IEnumerable<Statistic> GetAll()
         {
             return _context.Statistics;
@@ -52,9 +60,9 @@ namespace StatBot.Database.PostgresRepositories
             _context.SaveChanges();
         }
 
-        public void Update(Statistic stat)
+        public void Update(Statistic obj)
         {
-            _context.Entry(stat).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _context.Entry(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         }
     }
 }

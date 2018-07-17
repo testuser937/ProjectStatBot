@@ -13,12 +13,12 @@ namespace StatBot.Database.PostgresRepositories
             _context = new BotDbContext();
         }
 
-        public void Add(User user)
+        public void Add(User obj)
         {
             var count = GetAll().ToList().Count;
-            user.Id = count + 1;
+            obj.Id = count + 1;
 
-            _context.Users.Add(user);
+            _context.Users.Add(obj);
         }
 
         public void Delete(int id)
@@ -36,6 +36,14 @@ namespace StatBot.Database.PostgresRepositories
             GC.SuppressFinalize(this);
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_context != null) _context.Dispose();
+            }
+        }
+
         public IEnumerable<User> GetAll()
         {
             return _context.Users;
@@ -47,13 +55,13 @@ namespace StatBot.Database.PostgresRepositories
         }
 
         public void Save()
-        {            
+        {
             _context.SaveChanges();
         }
 
-        public void Update(User user)
+        public void Update(User obj)
         {
-            _context.Entry(user).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _context.Entry(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         }
     }
 }
