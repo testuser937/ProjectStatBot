@@ -6,7 +6,7 @@ using StatBot.Database.PostgresRepositories;
 
 namespace StatBot.Models
 {
-    public class DataModel
+    public static class DataModel
     {
         private static List<User> _users;
         private static List<Statistic> _stats;
@@ -15,8 +15,7 @@ namespace StatBot.Models
         {
             get
             {
-                var db = new PostgresUserRepository();
-                return db.GetAll().ToList();
+                return GetUsers();
             }
             set { _users = value; }
         }
@@ -25,10 +24,21 @@ namespace StatBot.Models
         {
             get
             {
-                var db = new PostgresStatsRepository();
-                return db.GetAll().ToList();
+               return GetStatistics();
             }
             set { _stats = value; }
+        }
+
+        private static List<User> GetUsers()
+        {
+            var db = new PostgresUserRepository();
+            return db.GetAll().ToList();
+        }
+
+        private static List<Statistic> GetStatistics()
+        {
+            var db = new PostgresStatsRepository();
+            return db.GetAll().OrderBy(x => x.Id).ToList();
         }
 
         public static User RememberUser(Activity activity)

@@ -7,54 +7,54 @@ namespace StatBot.Database.PostgresRepositories
 {
     public class PostgresStatsRepository : IRepository<Statistic>
     {
-        private StatDbContext _context;
+        private readonly StatDbturnContext _turnContext;
 
         public PostgresStatsRepository()
         {
-            _context = new StatDbContext();
+            _turnContext = new StatDbturnContext();
         }
 
-        public void Add(Statistic stat)
+        public void Add(Statistic obj)
         {
             var count = GetAll().ToList().Count;
-            stat.Id = count + 1;
+            obj.Id = count + 1;
 
-            _context.Statistics.Add(stat);
+            _turnContext.Statistics.Add(obj);
         }
 
         public void Delete(int id)
         {
-            var stat = _context.Statistics.Find(id);
+            var stat = _turnContext.Statistics.Find(id);
             if (stat != null)
             {
-                _context.Statistics.Remove(stat);
+                _turnContext.Statistics.Remove(stat);
             }
         }
 
         public void Dispose()
         {
-            _context.Dispose();
+            _turnContext.Dispose();
             GC.SuppressFinalize(this);
         }
 
         public IEnumerable<Statistic> GetAll()
         {
-            return _context.Statistics;
+            return _turnContext.Statistics;
         }
 
         public Statistic GetById(int id)
         {
-            return _context.Statistics.Find(id);
+            return _turnContext.Statistics.Find(id);
         }
 
         public void Save()
         {
-            _context.SaveChanges();
+            _turnContext.SaveChanges();
         }
 
-        public void Update(Statistic stat)
+        public void Update(Statistic obj)
         {
-            _context.Entry(stat).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _turnContext.Entry(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         }
     }
 }

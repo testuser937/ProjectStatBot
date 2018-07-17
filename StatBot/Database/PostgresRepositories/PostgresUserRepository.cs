@@ -7,54 +7,53 @@ namespace StatBot.Database.PostgresRepositories
 {
     public class PostgresUserRepository : IRepository<User>
     {
-        private BotDbContext _context;
+        private readonly BotDbturnContext _turnContext;
         public PostgresUserRepository()
         {
-            _context = new BotDbContext();
+            _turnContext = new BotDbturnContext();
         }
 
-        public void Add(User user)
+        public void Add(User obj)
         {
             var count = GetAll().ToList().Count;
-            user.Id = count + 1;
+            obj.Id = count + 1;
 
-            _context.Users.Add(user);
+            _turnContext.Users.Add(obj);
         }
 
         public void Delete(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = _turnContext.Users.Find(id);
             if (user != null)
             {
-                _context.Users.Remove(user);
+                _turnContext.Users.Remove(user);
             }
         }
 
         public void Dispose()
         {
-            _context.Dispose();
+            _turnContext.Dispose();
             GC.SuppressFinalize(this);
         }
 
         public IEnumerable<User> GetAll()
         {
-            return _context.Users;
+            return _turnContext.Users;
         }
 
         public User GetById(int id)
         {
-            return _context.Users.Find(id);
+            return _turnContext.Users.Find(id);
         }
 
         public void Save()
         {
-            _context.SaveChanges();
+            _turnContext.SaveChanges();
         }
 
-        public void Update(User user)
+        public void Update(User obj)
         {
-            _context.Entry(user).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-
+            _turnContext.Entry(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         }
     }
 }

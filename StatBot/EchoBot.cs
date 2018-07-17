@@ -12,123 +12,112 @@ using StatBot.Models;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Core.Extensions;
 using StatBot.Database.PostgresRepositories;
-
+using StatBot.Cards;
 
 namespace StatBot
 {
     public class EchoBot : IBot
     {
         private readonly DialogSet dialogs;
+        private static bool IsDialogStart = false;
+        private static List<ActionButton> showedButtons = new List<ActionButton>();
+        private static List<ITool> _tools = new List<ITool>();
+
+        public static List<ActionButton> ShowedButtons { get => showedButtons; set => showedButtons = value; }
 
         public EchoBot()
         {
             dialogs = new DialogSet();
             InitDialog();
+
+            var baseInterfaceType = typeof(ITool);
+            var botCommands = Assembly.GetAssembly(baseInterfaceType)
+                .GetTypes()
+                .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ITool") != null);
+            foreach (var botCommand in botCommands)
+            {
+                _tools.Add((ITool)Activator.CreateInstance(botCommand));
+            }
         }
 
 
         /// <summary>
         /// Every Conversation turn for our EchoBot will call this method.
         /// </summary>
-        /// <param name="context">Turn scoped context containing all the data needed
+        /// <param name="turnContext">Turn scoped turnContext containing all the data needed
         /// for processing this conversation turn. </param>        
-        public async Task OnTurn(ITurnContext context)
+        public async Task OnTurn(ITurnContext turnContext)
         {
-            if (context.Activity.Type == ActivityTypes.Message)
+            if (turnContext.Activity.Type == ActivityTypes.Message)
             {
-                var state = ConversationState<Dictionary<string, object>>.Get(context);
-                var dc = dialogs.CreateContext(context, state);
+                var user = DataModel.RememberUser(turnContext.Activity);
+                var state = ConversationState<Dictionary<string, object>>.Get(turnContext);
+                var dc = dialogs.CreateContext(turnContext, state);
                 await dc.Continue();
 
-                if (!context.Responded)
+                if (!turnContext.Responded && turnContext.Activity.Text.ToLowerInvariant().Contains("/createstat"))
                 {
-                    if (context.Activity.Text.ToLowerInvariant().Contains("/createstat"))
-                    {
-                        await dc.Begin("createStatDialig");
-                        return;
-                    }
-                }
+                    await dc.Begin("createStatDialig");
+                    return;
+                }                
 
-                if (!String.IsNullOrEmpty(context.Activity.Text))
+                if (!String.IsNullOrEmpty(turnContext.Activity.Text))
                 {
-                    var data = context.Activity.Text.Split(' ');
-                    int StatisticId = 0;
-                    string ParrentButtonType = "";
-                    string ButtonType = "";
-                    try
+                    var a = turnContext.Activity.Text.Split(' ');
+                    if (a[0].Equals("ButtonClick") && a.Length == 3)
                     {
-                        StatisticId = Convert.ToInt32(data[1]);
-                        ButtonType = data[0];
-                        ParrentButtonType = data[2];
-                    }
-                    catch { }
-
-                    List<string> ButtonNames = new List<string> { "StatisticButton", "ActionButton" };
-                    if (ButtonNames.Contains(ButtonType))
-                    {
-                        List<ICard> _cards = new List<ICard>();
-
-                        var baseInterfaceType_ = typeof(ICard);
-                        var botButtons = Assembly.GetAssembly(baseInterfaceType_)
-                            .GetTypes()
-                            .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ICard") != null);
-
-
-                        foreach (var botButton in botButtons)
-                        {
-                            _cards.Add((ICard)Activator.CreateInstance(botButton, StatisticId, null,null));
-                        }
-
-                        var str_ = ButtonType;
-
-                        var card = _cards.FirstOrDefault(x => x.ButtonsName.Any(y => y.Equals(str_)));
-                        if (card != null)
-                        {
-                            await context.SendActivity(card.OnClick(context.Activity));
-                        }
+                        await DoButtonAction(a,turnContext);
                     }
                     else
                     {
-                        var user = DataModel.RememberUser(context.Activity);
-                        List<ITool> _tools = new List<ITool>();
-
-
-                        var baseInterfaceType = typeof(ITool);
-                        var botCommands = Assembly.GetAssembly(baseInterfaceType)
-                            .GetTypes()
-                            .Where(types => types.IsClass && !types.IsAbstract && types.GetInterface("ITool") != null);
-                        foreach (var botCommand in botCommands)
-                        {
-                            _tools.Add((ITool)Activator.CreateInstance(botCommand));
-                        }
-
-                        var str = context.Activity.Text.Trim();
-                        var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
-                        var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
-                        if (command[0] != '/')
-                        {
-                            command = "/" + command;
-                        }
-
-                        var help = new Help();
-
-                        var tool = _tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
-                        if (tool != null)
-                        {
-                            context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
-                            if (user == null || (!user.IsAdmin && ((ITool)tool).IsAdmin))
-                            {
-                                await context.SendActivity(help.Run(context.Activity));
-                                return;
-                            }
-                            await context.SendActivity(tool.Run(context.Activity));
-                        }
-                        //else
-                        //{
-                        //    await context.SendActivity(help.Run(context.Activity));
-                        //}
+                        await DoCommand(turnContext, user);
                     }
                 }
+            }
+        }
+
+        public async Task DoButtonAction(string[] a, ITurnContext turnturnContext)
+        {
+            int Id = Convert.ToInt32(a[1]);
+            int ButtonAction = Convert.ToInt32(a[2]);
+            for (int i = 0; i < ShowedButtons.Count; i++)
+            {
+                if (ShowedButtons[i].BtnSettings.Statistic_Id == Id && ShowedButtons[i].BtnSettings.ActionType == ButtonAction)
+                {
+                    await turnturnContext.SendActivity(ShowedButtons[i].OnClick(turnturnContext.Activity));
+                    return;
+                }
+            }
+            await turnturnContext.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rЗаново наберите команду /tunestat");
+        }
+
+
+        public async Task DoCommand(ITurnContext turnContext,User user)
+        {
+            var str = turnContext.Activity.Text.Trim();
+            var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
+            var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
+            if (command[0] != '/')
+            {
+                command = "/" + command;
+            }
+
+            var help = new Help();
+
+            var tool = _tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
+            if (tool != null)
+            {
+                turnContext.Activity.Text = indexOfSpace >= 0 ? turnContext.Activity.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
+                if (user == null || (!user.IsAdmin && (tool).IsAdmin))
+                {
+                    await turnContext.SendActivity(help.Run(turnContext.Activity));
+                    return;
+                }
+                await turnContext.SendActivity(tool.Run(turnContext.Activity));
+            }
+            else if (!IsDialogStart)
+            {
+                await turnContext.SendActivity(help.Run(turnContext.Activity));
             }
         }
 
@@ -148,8 +137,6 @@ namespace StatBot
                     dc.ActiveDialog.State["name"] = args["Value"];
                     var userState = UserState<BotUserState>.Get(dc.Context);
                     userState.statName = Convert.ToString(dc.ActiveDialog.State["name"]);
-
-                    //reservationDate = Convert.ToDateTime(dateTimeResult.Value);
             
                     // Ask for next info
                     await dc.Prompt("textPrompt2", "Введите sql-запрос");
