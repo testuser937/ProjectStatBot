@@ -74,8 +74,8 @@ namespace StatBot
         public const bool ShowButtons = true;
         
         /// <summary>
-        /// Строка подключения к БД
+        /// Строка подключения к БД. Задается Админом
         /// </summary>
-        public const string ConnectionString = "Host=;Username=;Password=;Database=";
+        public const string ConnectionString = "";
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace StatBot.Database
 {
-    public class StatDbContext : DbContext
+    public class StatDbturnContext : DbContext
     {
         public DbSet<Statistic> Statistics { get; set; }
 

@@ -41,10 +41,10 @@ namespace StatBot
                 // caught here. To facillitate debugging, the exception is sent out, via Trace, 
                 // to the emulator. Trace activities are NOT displayed to users, so in addition
                 // an "Ooops" message is sent. 
-                options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
+                options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (turnContext, exception) =>
                 {
-                    await context.TraceActivity("EchoBot Exception", exception);
-                    await context.SendActivity("Sorry, it looks like something went wrong!");
+                    await turnContext.TraceActivity("EchoBot Exception", exception);
+                    await turnContext.SendActivity("Sorry, it looks like something went wrong!");
                 }));
 
                 // The Memory Storage used here is for local bot debugging only. When the bot

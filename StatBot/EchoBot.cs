@@ -44,39 +44,39 @@ namespace StatBot
         /// <summary>
         /// Every Conversation turn for our EchoBot will call this method.
         /// </summary>
-        /// <param name="context">Turn scoped context containing all the data needed
+        /// <param name="turnContext">Turn scoped turnContext containing all the data needed
         /// for processing this conversation turn. </param>        
-        public async Task OnTurn(ITurnContext context)
+        public async Task OnTurn(ITurnContext turnContext)
         {
-            if (context.Activity.Type == ActivityTypes.Message)
+            if (turnContext.Activity.Type == ActivityTypes.Message)
             {
-                var user = DataModel.RememberUser(context.Activity);
-                var state = ConversationState<Dictionary<string, object>>.Get(context);
-                var dc = dialogs.CreateContext(context, state);
+                var user = DataModel.RememberUser(turnContext.Activity);
+                var state = ConversationState<Dictionary<string, object>>.Get(turnContext);
+                var dc = dialogs.CreateContext(turnContext, state);
                 await dc.Continue();
 
-                if (!context.Responded && context.Activity.Text.ToLowerInvariant().Contains("/createstat"))
+                if (!turnContext.Responded && turnContext.Activity.Text.ToLowerInvariant().Contains("/createstat"))
                 {
                     await dc.Begin("createStatDialig");
                     return;
                 }                
 
-                if (!String.IsNullOrEmpty(context.Activity.Text))
+                if (!String.IsNullOrEmpty(turnContext.Activity.Text))
                 {
-                    var a = context.Activity.Text.Split(' ');
+                    var a = turnContext.Activity.Text.Split(' ');
                     if (a[0].Equals("ButtonClick") && a.Length == 3)
                     {
-                        await DoButtonAction(a,context);
+                        await DoButtonAction(a,turnContext);
                     }
                     else
                     {
-                        await DoCommand(context, user);
+                        await DoCommand(turnContext, user);
                     }
                 }
             }
         }
 
-        public async Task DoButtonAction(string[] a, ITurnContext context)
+        public async Task DoButtonAction(string[] a, ITurnContext turnturnContext)
         {
             int Id = Convert.ToInt32(a[1]);
             int ButtonAction = Convert.ToInt32(a[2]);
@@ -84,17 +84,17 @@ namespace StatBot
             {
                 if (ShowedButtons[i].BtnSettings.Statistic_Id == Id && ShowedButtons[i].BtnSettings.ActionType == ButtonAction)
                 {
-                    await context.SendActivity(ShowedButtons[i].OnClick(context.Activity));
+                    await turnturnContext.SendActivity(ShowedButtons[i].OnClick(turnturnContext.Activity));
                     return;
                 }
             }
-            await context.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rЗаново наберите команду /tunestat");
+            await turnturnContext.SendActivity("Вы нажали на кнопку которой уже нет в памяти!\n\rЗаново наберите команду /tunestat");
         }
 
 
-        public async Task DoCommand(ITurnContext context,User user)
+        public async Task DoCommand(ITurnContext turnContext,User user)
         {
-            var str = context.Activity.Text.Trim();
+            var str = turnContext.Activity.Text.Trim();
             var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
             var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
             if (command[0] != '/')
@@ -107,17 +107,17 @@ namespace StatBot
             var tool = _tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
             if (tool != null)
             {
-                context.Activity.Text = indexOfSpace >= 0 ? context.Activity.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
+                turnContext.Activity.Text = indexOfSpace >= 0 ? turnContext.Activity.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
                 if (user == null || (!user.IsAdmin && (tool).IsAdmin))
                 {
-                    await context.SendActivity(help.Run(context.Activity));
+                    await turnContext.SendActivity(help.Run(turnContext.Activity));
                     return;
                 }
-                await context.SendActivity(tool.Run(context.Activity));
+                await turnContext.SendActivity(tool.Run(turnContext.Activity));
             }
             else if (!IsDialogStart)
             {
-                await context.SendActivity(help.Run(context.Activity));
+                await turnContext.SendActivity(help.Run(turnContext.Activity));
             }
         }
 
