@@ -29,10 +29,10 @@ namespace ModulBot.Commands
                 if (!stat.IsActive)
                     stat.Name += " (Off)";
                 InlineKeyboardButton button = new InlineKeyboardButton() { CallbackData = $"{stat.Id} {(int)Constants.ActionTypes.ShowTurn} {Constants.ShowButtons}", Text = $"{stat.Id} {stat.Name}" };
-                Bot.StatButtons.Add(new List<InlineKeyboardButton> { button }); ;
+                Bot.StatButtons.Add(new List<InlineKeyboardButton> { button });
             }
-            Bot.TextOnMessageWithButtons = "Настройка статистик:";
-            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Настройка статистик:", replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
+            Bot.TextOnMessageWithButtons1 = "Настройка статистик:";
+            await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Настройка статистик:", replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
         }
 
         public StatOnOff()

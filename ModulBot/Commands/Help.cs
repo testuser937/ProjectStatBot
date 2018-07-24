@@ -22,7 +22,7 @@ namespace ModulBot.Commands
         protected string CommandText { get; set; }
         public async void Run(Message message)
         {
-            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Список доступных команд:\n" + CommandText);
+            await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Список доступных команд:\n" + CommandText);
         }
 
         public Help()

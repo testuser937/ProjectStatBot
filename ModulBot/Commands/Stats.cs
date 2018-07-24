@@ -23,9 +23,9 @@ namespace ModulBot.Commands
                     StatNames += $"{stat.Name}\n";
             }
             if (StatNames != "")
-                await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, StatNames);
+                await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, StatNames);
             else
-                await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Нет доступных статистик");
+                await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Нет доступных статистик");
         }
 
         public Stats()

@@ -15,11 +15,14 @@ namespace ModulBot
 {
     public class Program
     {
-        public static Thread MessageSender;
+        private static Thread MessageSender;
+
+        public static Thread MessageSender1 { get => MessageSender; set => MessageSender = value; }
+
         public static void Main(string[] args)
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            MessageSender = new Thread(SendMessagesDaily);
+            MessageSender1 = new Thread(SendMessagesDaily);
             BuildWebHost(args).Run();
         }
 

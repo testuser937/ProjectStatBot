@@ -18,6 +18,6 @@ namespace ModulBot.Models
         public string Message { get; set; } // выдаваемое сообщение
         public string Query { get; set; } // sql-запрос
         public List<long> Subscribers { get; set; }
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
     }
 }

@@ -93,29 +93,24 @@ namespace ModulBot.Cards
                                 while (dr.Read())
                                     count += 1;
                             }
-                            // await Bot.BotClient.SendTextMessageAsync(chatId, string.Format(selected_stat.Message, count));
+                           
 
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine(ex.Message);
                         }
-
-                        //text = $"Статистика пользователя {chatId} :\n\r{stat.Message}";
                         text = string.Format(selected_stat.Message, count);
                         break;
                     }
                 case ((int)Constants.ActionTypes.Back):
                     {
-                        TuneStat tuneStat = new TuneStat();
-
-                        await Bot.BotClient.EditMessageTextAsync(new ChatId(chatId), messageId, Bot.TextOnMessageWithButtons, replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
+                        await Bot.BotClient1.EditMessageTextAsync(new ChatId(chatId), messageId, Bot.TextOnMessageWithButtons1, replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
                         return;
-                        //break;
                     }
             }
             bd.Save();
-            await Bot.BotClient.SendTextMessageAsync(chatId, text);
+            await Bot.BotClient1.SendTextMessageAsync(chatId, text);
         }
 
         public static async void ShowButtons(long chatId, int messageId, string[] buttonCallbackData)
@@ -130,7 +125,7 @@ namespace ModulBot.Cards
                 Bot.NextButtons.Add(new List<InlineKeyboardButton> { new InlineKeyboardButton { CallbackData = $"{statId} {(int)Constants.ActionTypes.TurnOff} {Constants.NotShowButtons}", Text = Constants.TurnOff } });
                 Bot.NextButtons.Add(new List<InlineKeyboardButton> { new InlineKeyboardButton { CallbackData = $"{statId} {(int)Constants.ActionTypes.Back} {Constants.NotShowButtons}", Text = Constants.Back } });
             }
-            else //if (_buttonSettings.ActionType == (int)Constants.ActionTypes.ShowSubs)
+            else
             {
                 Bot.NextButtons.Add(new List<InlineKeyboardButton> { new InlineKeyboardButton { CallbackData = $"{statId} {(int)Constants.ActionTypes.Subscribe} {Constants.NotShowButtons}", Text = Constants.Subscribe } });
                 Bot.NextButtons.Add(new List<InlineKeyboardButton> { new InlineKeyboardButton { CallbackData = $"{statId} {(int)Constants.ActionTypes.Unsubscribe} {Constants.NotShowButtons}", Text = Constants.Unsubscribe } });
@@ -140,7 +135,7 @@ namespace ModulBot.Cards
 
             var bd = new PostgresStatsRepository();
             var stat = bd.GetById(statId);
-            await Bot.BotClient.EditMessageTextAsync(new ChatId(chatId), messageId, "Настройка статистики: " + stat.Name, replyMarkup: new InlineKeyboardMarkup(Bot.NextButtons));
+            await Bot.BotClient1.EditMessageTextAsync(new ChatId(chatId), messageId, "Настройка статистики: " + stat.Name, replyMarkup: new InlineKeyboardMarkup(Bot.NextButtons));
         }
     }
 }

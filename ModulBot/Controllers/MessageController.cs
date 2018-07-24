@@ -33,10 +33,9 @@ namespace ModulBot.Controllers
                 else if (update.Message != null && update.Message.Type == MessageType.Text)
                 {
                     var message = update.Message;
-                    var chatId = message.Chat.Id;
 
                     var str = message.Text.Trim();
-                    if (str == "/createstat" || Bot.IsDialogStart)
+                    if (str == "/createstat" || Bot.IsDialogStart1)
                     {
                         CreateStat stat = new CreateStat();
                         stat.Run(message);
@@ -73,7 +72,7 @@ namespace ModulBot.Controllers
             }
             catch
             {
-                await Bot.BotClient.SendTextMessageAsync(update.CallbackQuery.Id, "Упс, что-то пошло не так. Бот не может обработать команду/нажатие на кнопку. Но он продолжит работу");
+                await Bot.BotClient1.SendTextMessageAsync(update.CallbackQuery.Id, "Упс, что-то пошло не так. Бот не может обработать команду/нажатие на кнопку. Но он продолжит работу");
             }
             return Ok();
         }
@@ -100,7 +99,7 @@ namespace ModulBot.Controllers
                 }
             try
             {
-                await Bot.BotClient.SendTextMessageAsync(chatId, "Попробуйте заново ввести команду /tunestat(/statonoff - для админа)");
+                await Bot.BotClient1.SendTextMessageAsync(chatId, "Попробуйте заново ввести команду /tunestat(/statonoff - для админа)");
             }
             catch
             {

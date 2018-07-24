@@ -11,7 +11,7 @@ using Npgsql;
 
 namespace ModulBot
 {
-    public class SendStat
+    public static class SendStat
     {
         public async static void SendStatistic()
         {
@@ -33,7 +33,7 @@ namespace ModulBot
                                 _count += 1;
                             foreach (var chatId in stat.Subscribers)
                             {
-                                await Bot.BotClient.SendTextMessageAsync(chatId, string.Format(stat.Message, _count));
+                                await Bot.BotClient1.SendTextMessageAsync(chatId, string.Format(stat.Message, _count));
                                 Thread.Sleep(100);
                             }
                             dr.Close();

@@ -20,7 +20,6 @@ namespace ModulBot.Models
         {
             if (message != null)
             {
-                //UserId = activity.From.Id;
                 UserName = message.Chat.Username;
                 ChatId = message.Chat.Id;
             }
