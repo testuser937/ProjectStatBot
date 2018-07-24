@@ -27,28 +27,6 @@ namespace ModulBot
         public static bool IsDialogStart = false;
         public static string TextOnMessageWithButtons;
 
-        public static void InitTimer()
-        {
-            var DailyTime = "00:39:00";
-            var dateNow = DateTime.Now;
-            var timeParts = DailyTime.Split(new char[1] { ':' });
-            var date = new DateTime(dateNow.Year, dateNow.Month, dateNow.Day,
-                       int.Parse(timeParts[0]), int.Parse(timeParts[1]), int.Parse(timeParts[2]));
-            if (date <= dateNow)
-            {
-                SendStat.SendStatistic();
-            }
-            else
-            {
-                System.Threading.Timer timer = null;
-                timer = new System.Threading.Timer(
-                    o => { SendStat.SendStatistic(); timer.Dispose(); },
-                    null,
-                    date - dateNow,
-                    TimeSpan.Zero);
-            }
-        }
-
 
         public static async Task<TelegramBotClient> GetBotClientAsync()
         {
