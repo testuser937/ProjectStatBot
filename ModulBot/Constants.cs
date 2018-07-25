@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace ModulBot
 {
     public class Constants
     {
+        private static IConfiguration Configuration { get; }
+
         public enum ActionTypes
         {   /// <summary>
             /// Включение статистики админом
@@ -81,6 +84,5 @@ namespace ModulBot
         /// Кнопка при нажатии на нее будет отображать другие кнопки
         /// </summary>
         public const bool ShowButtons = true;
-
     }
 }

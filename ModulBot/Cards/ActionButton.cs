@@ -10,11 +10,13 @@ using Telegram.Bot.Types.ReplyMarkups;
 using System.Threading.Tasks;
 using Npgsql;
 using ModulBot.Database;
+using Microsoft.Extensions.Configuration;
 
 namespace ModulBot.Cards
 {
     public static class ActionButton
     {
+        private static IConfiguration Configuration { get; }
         public static async void DoAction(long chatId, int messageId, string[] buttonCallbackData)
         {
             int statId = Convert.ToInt32(buttonCallbackData[0]);
@@ -77,13 +79,14 @@ namespace ModulBot.Cards
                     }
                 case ((int)Constants.ActionTypes.GetStat):
                     {
+                        string _connStr = Configuration.GetConnectionString("PostgreSQL");
                         int count = 0;
                         var db = new PostgresStatsRepository();
                         var selected_stat = db.GetById(statId);
 
                         try
                         {
-                            using (var conn = new NpgsqlConnection(Constants.ConnectionString))
+                            using (var conn = new NpgsqlConnection(_connStr))
                             {
                                 conn.Open();
                                 string query = selected_stat.Query;
