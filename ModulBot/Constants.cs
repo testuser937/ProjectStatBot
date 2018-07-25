@@ -82,9 +82,5 @@ namespace ModulBot
         /// </summary>
         public const bool ShowButtons = true;
 
-        /// <summary>
-        /// Строка подключения к БД. Задается Админом
-        /// </summary>
-        public const string ConnectionString = "Host=178.62.227.237;Username=postgres;Password=1234;Database=postgres";
     }
 }

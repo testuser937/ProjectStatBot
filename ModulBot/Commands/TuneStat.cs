@@ -27,7 +27,7 @@ namespace ModulBot.Commands
                 {
                     InlineKeyboardButton button = new InlineKeyboardButton() { CallbackData = $"{stat.Id} {(int)Constants.ActionTypes.ShowSubs} {Constants.ShowButtons}", Text = stat.Name };
                     // 1. Номер статистики, за которую отвечает кнопка 2.Номер действия 3.Тип кнопки                 
-                    Bot.StatButtons.Add(new List<InlineKeyboardButton> { button }); ;
+                    Bot.StatButtons.Add(new List<InlineKeyboardButton> { button });
                 }
             }
             Bot.TextOnMessageWithButtons1 = "Список статистик: ";

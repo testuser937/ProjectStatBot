@@ -8,17 +8,21 @@ using ModulBot.Database;
 using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using Npgsql;
+using Microsoft.Extensions.Configuration;
 
 namespace ModulBot
 {
     public static class SendStat
     {
+        private static IConfiguration Configuration { get; }
+
         public async static void SendStatistic()
         {
             int _count = 0;
+            string _connStr = Configuration.GetConnectionString("PostgreSQL");
             try
             {
-                using (var conn = new NpgsqlConnection(Constants.ConnectionString))
+                using (var conn = new NpgsqlConnection(_connStr))
                 {
                     conn.Open();
 

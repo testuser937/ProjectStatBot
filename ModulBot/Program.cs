@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Configuration;
 using System.Threading;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using ModulBot.Models;
-using ModulBot.Database.PostgresRepositories;
-using System.Net;
 
 namespace ModulBot
 {
-    public class Program
+    public static class Program
     {
         private static Thread MessageSender;
 
@@ -21,7 +14,6 @@ namespace ModulBot
 
         public static void Main(string[] args)
         {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             MessageSender1 = new Thread(SendMessagesDaily);
             BuildWebHost(args).Run();
         }
@@ -30,6 +22,7 @@ namespace ModulBot
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
                 .Build();
+    
 
         public static void SendMessagesDaily()
         {

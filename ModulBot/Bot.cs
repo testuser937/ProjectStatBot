@@ -8,7 +8,7 @@ using Telegram.Bot.Types;
 using ModulBot.Interfaces;
 using System.Reflection;
 using Telegram.Bot.Types.ReplyMarkups;
-using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace ModulBot
 {
@@ -20,6 +20,7 @@ namespace ModulBot
         private static List<ITool> tools = new List<ITool>();
         private static bool IsDialogStart = false;
         private static string TextOnMessageWithButtons;
+        private static IConfiguration Configuration { get; }
 
 
         public static List<List<InlineKeyboardButton>> StatButtons { get => statbuttons; set => statbuttons = value; }        
@@ -39,7 +40,7 @@ namespace ModulBot
                 return BotClient1;
             }
 
-            BotClient1 = new TelegramBotClient(AppSettings.Key);
+            BotClient1 = new TelegramBotClient(Configuration["Bot:Token"]);
 
             var me = await BotClient1.GetMeAsync();
 
@@ -64,7 +65,6 @@ namespace ModulBot
                     if (Bot.NextButtons[i][0].CallbackData.Equals(callbackInfo))
                     {
                         ActionButton.DoAction(chatId, messageId, callbackInfo.Split(' '));
-                        return;
                     }
                 }
             else

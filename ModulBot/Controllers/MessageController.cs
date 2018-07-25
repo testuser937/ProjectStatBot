@@ -15,66 +15,69 @@ namespace ModulBot.Controllers
         [HttpPost]
         public async Task<OkResult> Post([FromBody]Update update)
         {
-            var botClient = await Bot.GetBotClientAsync();
+            await Bot.GetBotClientAsync();
 
             var user = DataModel.RememberUser(update.Message);
 
-            if (update == null) return Ok();
-
-
-            try
+            if (update == null)
+                return Ok();
+            else
             {
-                if (update.CallbackQuery != null)
-                {
-                    var message = update.CallbackQuery.Message;
-                    ButtonAction(update.CallbackQuery.Data, message.Chat.Id, message.MessageId);
-                }
 
-                else if (update.Message != null && update.Message.Type == MessageType.Text)
+                try
                 {
-                    var message = update.Message;
-
-                    var str = message.Text.Trim();
-                    if (str == "/createstat" || Bot.IsDialogStart1)
+                    if (update.CallbackQuery != null)
                     {
-                        CreateStat stat = new CreateStat();
-                        stat.Run(message);
-                        return Ok();
-                    }
-                    var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
-                    var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
-                    if (command[0] != '/')
-                    {
-                        command = "/" + command;
+                        var message = update.CallbackQuery.Message;
+                        ButtonAction(update.CallbackQuery.Data, message.Chat.Id, message.MessageId);
                     }
 
-                    var help = new Help();
-
-                    var tool = Bot.Tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
-                    if (tool != null)
+                    else if (update.Message != null && update.Message.Type == MessageType.Text)
                     {
-                        message.Text = indexOfSpace >= 0 ? message.Text.Substring(indexOfSpace, str.Length - indexOfSpace) : String.Empty;
-                        //message.Text = indexOfSpace >= 0 ? message.Text.Substring(indexOfSpace + 1, str.Length - indexOfSpace - 1) : String.Empty;
-                        if (user == null || (!user.IsAdmin && (tool).IsAdmin))
+                        var message = update.Message;
+
+                        var str = message.Text.Trim();
+                        if (str == "/createstat" || Bot.IsDialogStart1)
+                        {
+                            CreateStat stat = new CreateStat();
+                            stat.Run(message);
+                            return Ok();
+                        }
+                        var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
+                        var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
+                        if (command[0] != '/')
+                        {
+                            command = "/" + command;
+                        }
+
+                        var help = new Help();
+
+                        var tool = Bot.Tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
+                        if (tool != null)
+                        {
+                            message.Text = indexOfSpace >= 0 ? message.Text.Substring(indexOfSpace, str.Length - indexOfSpace) : String.Empty;
+
+                            if (user == null || (!user.IsAdmin && (tool).IsAdmin))
+                            {
+                                help.Run(message);
+                                return Ok();
+                            }
+                            tool.Run(message);
+                        }
+                        else
                         {
                             help.Run(message);
                             return Ok();
                         }
-                        tool.Run(message);
                     }
-                    else
-                    {
-                        help.Run(message);
-                        return Ok();
-                    }
-                }
 
+                }
+                catch
+                {
+                    await Bot.BotClient1.SendTextMessageAsync(update.CallbackQuery.Id, "Упс, что-то пошло не так. Бот не может обработать команду/нажатие на кнопку. Но он продолжит работу");
+                }
+                return Ok();
             }
-            catch
-            {
-                await Bot.BotClient1.SendTextMessageAsync(update.CallbackQuery.Id, "Упс, что-то пошло не так. Бот не может обработать команду/нажатие на кнопку. Но он продолжит работу");
-            }
-            return Ok();
         }
 
         public static async void ButtonAction(string callbackInfo, long chatId, int messageId)
@@ -101,11 +104,10 @@ namespace ModulBot.Controllers
             {
                 await Bot.BotClient1.SendTextMessageAsync(chatId, "Попробуйте заново ввести команду /tunestat(/statonoff - для админа)");
             }
-            catch
+            catch(Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
             }
-            return;
         }
     }
 }
