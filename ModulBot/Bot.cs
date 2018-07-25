@@ -14,35 +14,35 @@ namespace ModulBot
 {
     public static class Bot
     {
-        private static  TelegramBotClient BotClient;
+        private static  TelegramBotClient botClient;
         private static List<List<InlineKeyboardButton>> statbuttons = new List<List<InlineKeyboardButton>>();
         private static List<List<InlineKeyboardButton>> nextbuttons = new List<List<InlineKeyboardButton>>();
         private static List<ITool> tools = new List<ITool>();
-        private static bool IsDialogStart = false;
-        private static string TextOnMessageWithButtons;
+        private static bool isDialogStart = false;
+        private static string textOnMessageWithButtons;
         private static IConfiguration Configuration { get; }
 
 
         public static List<List<InlineKeyboardButton>> StatButtons { get => statbuttons; set => statbuttons = value; }        
         public static List<List<InlineKeyboardButton>> NextButtons { get => nextbuttons; set => nextbuttons = value; }
         internal static List<ITool> Tools { get => tools; set => tools = value; }
-        public static TelegramBotClient BotClient1 { get => BotClient; set => BotClient = value; }
-        public static bool IsDialogStart1 { get => IsDialogStart; set => IsDialogStart = value; }
-        public static string TextOnMessageWithButtons1 { get => TextOnMessageWithButtons; set => TextOnMessageWithButtons = value; }
+        public static TelegramBotClient BotClient { get => botClient; set => botClient = value; }
+        public static bool IsDialogStart { get => isDialogStart; set => isDialogStart = value; }
+        public static string TextOnMessageWithButtons { get => textOnMessageWithButtons; set => textOnMessageWithButtons = value; }
 
         
 
 
         public static async Task<TelegramBotClient> GetBotClientAsync()
         {
-            if (BotClient1 != null)
+            if (BotClient != null)
             {
-                return BotClient1;
+                return BotClient;
             }
 
-            BotClient1 = new TelegramBotClient(Configuration["Bot:Token"]);
+            BotClient = new TelegramBotClient(Configuration["Bot:Token"]);
 
-            var me = await BotClient1.GetMeAsync();
+            var me = await BotClient.GetMeAsync();
 
             Console.WriteLine($"Hello! My name is {me.FirstName}");
             var baseInterfaceType = typeof(ITool);
@@ -53,8 +53,8 @@ namespace ModulBot
             {
                 Tools.Add((ITool)Activator.CreateInstance(botCommand));
             }
-            Program.MessageSender1.Start();
-            return BotClient1;
+            Program.MessageSender.Start();
+            return BotClient;
         }
 
         public static async void ButtonAction(string callbackInfo, long chatId, int messageId)
@@ -76,8 +76,7 @@ namespace ModulBot
                     }
                 }
 
-            await Bot.BotClient1.SendTextMessageAsync(chatId, "Попробуйте заново ввести команду /tunestat(/statonoff - для админа)");
-            return;
+            await Bot.BotClient.SendTextMessageAsync(chatId, "Попробуйте заново ввести команду /tunestat(/statonoff - для админа)");
         }
     }
 }

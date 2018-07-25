@@ -23,16 +23,23 @@ namespace ModulBot.Commands
         public async void Run(Message message)
         {
             Bot.StatButtons = new List<List<InlineKeyboardButton>>();
+            var _builder = new StringBuilder("");
             for (var i = 0; i < DataModel.Statistics.Count; i++)
             {
                 var stat = DataModel.Statistics[i];
+                _builder.Append(stat.Name);
                 if (!stat.IsActive)
-                    stat.Name += " (Off)";
+                {
+                    _builder.Append("(Off)");
+                    stat.Name = _builder.ToString();
+                    _builder.Clear();
+                }                  
+                    
                 InlineKeyboardButton button = new InlineKeyboardButton() { CallbackData = $"{stat.Id} {(int)Constants.ActionTypes.ShowTurn} {Constants.ShowButtons}", Text = $"{stat.Id} {stat.Name}" };
                 Bot.StatButtons.Add(new List<InlineKeyboardButton> { button });
             }
-            Bot.TextOnMessageWithButtons1 = "Настройка статистик:";
-            await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Настройка статистик:", replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
+            Bot.TextOnMessageWithButtons = "Настройка статистик:";
+            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Настройка статистик:", replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
         }
 
         public StatOnOff()

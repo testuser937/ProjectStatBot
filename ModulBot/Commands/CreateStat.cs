@@ -27,27 +27,27 @@ namespace ModulBot.Commands
             switch (Step)
             {
                 case 0:
-                    Bot.IsDialogStart1 = true;
+                    Bot.IsDialogStart = true;
                     Step++;
-                    await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Введите название");
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Введите название");
 
                     break;
                 case 1:
                     UserState.statName = message.Text;
                     Step++;
-                    await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Введите сообщение");
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Введите сообщение");
 
                     break;
                 case 2:
                     UserState.statMessage = message.Text;
                     Step++;
-                    await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Введите SQL-запрос");
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Введите SQL-запрос");
 
                     break;
                 case 3:
                     UserState.statQuery = message.Text;
                     Step++;
-                    await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Активировать статистику?<b>[да/нет]</b>\nПо умолчанию статистика будет активна", parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Активировать статистику?<b>[да/нет]</b>\nПо умолчанию статистика будет активна", parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
 
                     break;
                 case 4:
@@ -67,14 +67,14 @@ namespace ModulBot.Commands
                         $"SQL-зарос: {UserState.statQuery}\n" +
                         $"Активировать: {UserState.statIsActive.ToString()}\n";
                     Step++;
-                    await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, result + "Все верно?<b>[да/нет]</b>\n", parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, result + "Все верно?<b>[да/нет]</b>\n", parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
 
 
                     break;
                 case 5:
                     if (message.Text.ToLower() == "да")
                     {
-                        Bot.IsDialogStart1 = false;
+                        Bot.IsDialogStart = false;
 
                         var db = new PostgresStatsRepository();
                         Statistic stat = new Statistic(UserState.statName, UserState.statMessage, UserState.statQuery, UserState.statIsActive);
@@ -82,20 +82,20 @@ namespace ModulBot.Commands
                         db.Save();
 
                         Step = 0;
-                        await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Статистика создана");
+                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Статистика создана");
 
 
                     }
                     else if (message.Text.ToLower() == "нет")
                     {
-                        Bot.IsDialogStart1 = false;
+                        Bot.IsDialogStart = false;
                         Step = 0;
-                        await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Попробуйте еще раз создать статистику с помощью команды /createstat");
+                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Попробуйте еще раз создать статистику с помощью команды /createstat");
 
                     }
                     else
                     {
-                        await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Команда не распознана. Введите <b>да</b> или <b>нет</b>", parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Команда не распознана. Введите <b>да</b> или <b>нет</b>", parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
                     }
                     break;
             }

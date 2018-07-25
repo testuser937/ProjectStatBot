@@ -30,8 +30,8 @@ namespace ModulBot.Commands
                     Bot.StatButtons.Add(new List<InlineKeyboardButton> { button });
                 }
             }
-            Bot.TextOnMessageWithButtons1 = "Список статистик: ";
-            await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, Bot.TextOnMessageWithButtons1, replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
+            Bot.TextOnMessageWithButtons = "Список статистик: ";
+            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, Bot.TextOnMessageWithButtons, replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
         }
 
         public TuneStat()

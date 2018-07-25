@@ -14,7 +14,7 @@ namespace ModulBot
 {
     public static class SendStat
     {
-        private static IConfiguration Configuration { get; }
+        private static IConfiguration Configuration;
 
         public async static void SendStatistic()
         {
@@ -37,7 +37,7 @@ namespace ModulBot
                                 _count += 1;
                             foreach (var chatId in stat.Subscribers)
                             {
-                                await Bot.BotClient1.SendTextMessageAsync(chatId, string.Format(stat.Message, _count));
+                                await Bot.BotClient.SendTextMessageAsync(chatId, string.Format(stat.Message, _count));
                                 Thread.Sleep(100);
                             }
                             dr.Close();

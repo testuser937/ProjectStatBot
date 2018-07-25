@@ -6,7 +6,7 @@ namespace ModulBot.Database
 {
     public class StatDbturnContext : DbContext
     {
-        private IConfiguration Configuration { get; }
+        private IConfiguration Configuration;
         public DbSet<Statistic> Statistics { get; set; }
 
 

@@ -8,8 +8,6 @@ namespace ModulBot
 {
     public class Constants
     {
-        private static IConfiguration Configuration { get; }
-
         public enum ActionTypes
         {   /// <summary>
             /// Включение статистики админом

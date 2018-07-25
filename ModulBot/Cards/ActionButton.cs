@@ -16,7 +16,7 @@ namespace ModulBot.Cards
 {
     public static class ActionButton
     {
-        private static IConfiguration Configuration { get; }
+        private static IConfiguration Configuration;
         public static async void DoAction(long chatId, int messageId, string[] buttonCallbackData)
         {
             int statId = Convert.ToInt32(buttonCallbackData[0]);
@@ -108,12 +108,12 @@ namespace ModulBot.Cards
                     }
                 case ((int)Constants.ActionTypes.Back):
                     {
-                        await Bot.BotClient1.EditMessageTextAsync(new ChatId(chatId), messageId, Bot.TextOnMessageWithButtons1, replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
+                        await Bot.BotClient.EditMessageTextAsync(new ChatId(chatId), messageId, Bot.TextOnMessageWithButtons, replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
                         return;
                     }
             }
             bd.Save();
-            await Bot.BotClient1.SendTextMessageAsync(chatId, text);
+            await Bot.BotClient.SendTextMessageAsync(chatId, text);
         }
 
         public static async void ShowButtons(long chatId, int messageId, string[] buttonCallbackData)
@@ -138,7 +138,7 @@ namespace ModulBot.Cards
 
             var bd = new PostgresStatsRepository();
             var stat = bd.GetById(statId);
-            await Bot.BotClient1.EditMessageTextAsync(new ChatId(chatId), messageId, "Настройка статистики: " + stat.Name, replyMarkup: new InlineKeyboardMarkup(Bot.NextButtons));
+            await Bot.BotClient.EditMessageTextAsync(new ChatId(chatId), messageId, "Настройка статистики: " + stat.Name, replyMarkup: new InlineKeyboardMarkup(Bot.NextButtons));
         }
     }
 }

@@ -2,6 +2,7 @@
 using ModulBot.Models;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
@@ -16,16 +17,16 @@ namespace ModulBot.Commands
 
         public async void Run(Message message)
         {
-            string StatNames = "";
+            StringBuilder StatNames = new StringBuilder("");
             foreach (var stat in DataModel.Statistics)
             {
                 if (stat.IsActive)
-                    StatNames += $"{stat.Name}\n";
+                    StatNames.Append($"{stat.Name}\n");
             }
-            if (StatNames != "")
-                await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, StatNames);
+            if (StatNames.Length != 0)
+                await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, StatNames.ToString());
             else
-                await Bot.BotClient1.SendTextMessageAsync(message.Chat.Id, "Нет доступных статистик");
+                await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Нет доступных статистик");
         }
 
         public Stats()

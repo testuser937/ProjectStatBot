@@ -9,7 +9,7 @@ namespace ModulBot.Database
     {
         public BotDbturnContext() { }
 
-        private IConfiguration Configuration { get; }
+        private IConfiguration Configuration;
 
         public DbSet<User> Users { get; set; }
 

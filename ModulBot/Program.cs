@@ -8,13 +8,13 @@ namespace ModulBot
 {
     public static class Program
     {
-        private static Thread MessageSender;
+        private static Thread messageSender;
 
-        public static Thread MessageSender1 { get => MessageSender; set => MessageSender = value; }
+        public static Thread MessageSender { get => messageSender; set => messageSender = value; }
 
         public static void Main(string[] args)
         {
-            MessageSender1 = new Thread(SendMessagesDaily);
+            MessageSender = new Thread(SendMessagesDaily);
             BuildWebHost(args).Run();
         }
 

@@ -23,7 +23,6 @@ namespace ModulBot.Controllers
                 return Ok();
             else
             {
-
                 try
                 {
                     if (update.CallbackQuery != null)
@@ -33,48 +32,14 @@ namespace ModulBot.Controllers
                     }
 
                     else if (update.Message != null && update.Message.Type == MessageType.Text)
-                    {
+                    {                       
                         var message = update.Message;
-
-                        var str = message.Text.Trim();
-                        if (str == "/createstat" || Bot.IsDialogStart1)
-                        {
-                            CreateStat stat = new CreateStat();
-                            stat.Run(message);
-                            return Ok();
-                        }
-                        var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
-                        var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
-                        if (command[0] != '/')
-                        {
-                            command = "/" + command;
-                        }
-
-                        var help = new Help();
-
-                        var tool = Bot.Tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
-                        if (tool != null)
-                        {
-                            message.Text = indexOfSpace >= 0 ? message.Text.Substring(indexOfSpace, str.Length - indexOfSpace) : String.Empty;
-
-                            if (user == null || (!user.IsAdmin && (tool).IsAdmin))
-                            {
-                                help.Run(message);
-                                return Ok();
-                            }
-                            tool.Run(message);
-                        }
-                        else
-                        {
-                            help.Run(message);
-                            return Ok();
-                        }
+                        ProcessMessage(message, user);                       
                     }
-
                 }
                 catch
                 {
-                    await Bot.BotClient1.SendTextMessageAsync(update.CallbackQuery.Id, "Упс, что-то пошло не так. Бот не может обработать команду/нажатие на кнопку. Но он продолжит работу");
+                    await Bot.BotClient.SendTextMessageAsync(update.CallbackQuery.Id, "Упс, что-то пошло не так. Бот не может обработать команду/нажатие на кнопку. Но он продолжит работу");
                 }
                 return Ok();
             }
@@ -102,11 +67,45 @@ namespace ModulBot.Controllers
                 }
             try
             {
-                await Bot.BotClient1.SendTextMessageAsync(chatId, "Попробуйте заново ввести команду /tunestat(/statonoff - для админа)");
+                await Bot.BotClient.SendTextMessageAsync(chatId, "Попробуйте заново ввести команду /tunestat(/statonoff - для админа)");
             }
             catch(Exception ex)
             {
                 Console.WriteLine(ex.Message);
+            }
+        }
+
+        public static void ProcessMessage(Message message, Models.User user)
+        {
+            var str = message.Text.Trim();
+            if (str == "/createstat" || Bot.IsDialogStart)
+            {
+                CreateStat stat = new CreateStat();
+                stat.Run(message);
+            }
+            var indexOfSpace = str.IndexOf(" ", StringComparison.Ordinal);
+            var command = indexOfSpace != -1 ? str.Substring(0, indexOfSpace).ToLower() : str.ToLower();
+            if (command[0] != '/')
+            {
+                command = "/" + command;
+            }
+
+            var help = new Help();
+
+            var tool = Bot.Tools.FirstOrDefault(x => x.CommandsName.Any(y => y.Equals(command)));
+            if (tool != null)
+            {
+                message.Text = indexOfSpace >= 0 ? message.Text.Substring(indexOfSpace, str.Length - indexOfSpace) : String.Empty;
+
+                if (user == null || (!user.IsAdmin && (tool).IsAdmin))
+                {
+                    help.Run(message);
+                }
+                tool.Run(message);
+            }
+            else
+            {
+                help.Run(message);
             }
         }
     }
