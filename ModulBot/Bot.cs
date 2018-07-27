@@ -8,30 +8,30 @@ using Telegram.Bot.Types;
 using ModulBot.Interfaces;
 using System.Reflection;
 using Telegram.Bot.Types.ReplyMarkups;
-using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace ModulBot
 {
     public static class Bot
     {
-        private static  TelegramBotClient botClient;
+        private static TelegramBotClient botClient;
         private static List<List<InlineKeyboardButton>> statbuttons = new List<List<InlineKeyboardButton>>();
         private static List<List<InlineKeyboardButton>> nextbuttons = new List<List<InlineKeyboardButton>>();
         private static List<ITool> tools = new List<ITool>();
         private static bool isDialogStart = false;
         private static string textOnMessageWithButtons;
-        private static IConfiguration Configuration { get; }
+        private static bool isSetAdminStart = false;
 
-
-        public static List<List<InlineKeyboardButton>> StatButtons { get => statbuttons; set => statbuttons = value; }        
-        public static List<List<InlineKeyboardButton>> NextButtons { get => nextbuttons; set => nextbuttons = value; }
+        public static List<List<InlineKeyboardButton>> StatButtons { get => statbuttons;
+            set => statbuttons = value; }        
+        public static List<List<InlineKeyboardButton>> NextButtons { get => nextbuttons;
+            set => nextbuttons = value; }
         internal static List<ITool> Tools { get => tools; set => tools = value; }
         public static TelegramBotClient BotClient { get => botClient; set => botClient = value; }
         public static bool IsDialogStart { get => isDialogStart; set => isDialogStart = value; }
-        public static string TextOnMessageWithButtons { get => textOnMessageWithButtons; set => textOnMessageWithButtons = value; }
-
-        
-
+        public static string TextOnMessageWithButtons { get => textOnMessageWithButtons;
+            set => textOnMessageWithButtons = value; }
+        public static bool IsSetAdminStart { get => isSetAdminStart; set => isSetAdminStart = value; }
 
         public static async Task<TelegramBotClient> GetBotClientAsync()
         {
@@ -40,11 +40,8 @@ namespace ModulBot
                 return BotClient;
             }
 
-            BotClient = new TelegramBotClient(Configuration["Bot:Token"]);
+            BotClient = new TelegramBotClient(Startup.GetToken());
 
-            var me = await BotClient.GetMeAsync();
-
-            Console.WriteLine($"Hello! My name is {me.FirstName}");
             var baseInterfaceType = typeof(ITool);
             var botCommands = Assembly.GetAssembly(baseInterfaceType)
                 .GetTypes()
@@ -57,14 +54,15 @@ namespace ModulBot
             return BotClient;
         }
 
-        public static async void ButtonAction(string callbackInfo, long chatId, int messageId)
+        public static async Task ButtonAction(string callbackInfo, long chatId, int messageId)
         {
             if (callbackInfo.Split(' ')[2].ToLower().Equals("false"))
                 for (int i = 0; i < Bot.NextButtons.Count; i++)
                 {
                     if (Bot.NextButtons[i][0].CallbackData.Equals(callbackInfo))
                     {
-                        ActionButton.DoAction(chatId, messageId, callbackInfo.Split(' '));
+                        await ActionButton.DoAction(chatId, messageId, callbackInfo.Split(' '));
+                        return;
                     }
                 }
             else
@@ -72,7 +70,8 @@ namespace ModulBot
                 {
                     if (Bot.StatButtons[i][0].CallbackData.Equals(callbackInfo))
                     {
-                        ActionButton.ShowButtons(chatId, messageId, callbackInfo.Split(' '));
+                        await ActionButton.ShowButtons(chatId, messageId, callbackInfo.Split(' '));
+                        return;
                     }
                 }
 

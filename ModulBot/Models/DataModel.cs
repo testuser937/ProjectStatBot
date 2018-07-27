@@ -60,6 +60,12 @@ namespace ModulBot.Models
                     }
                     else
                     {
+                        if (user.FirstName == "")
+                        {
+                            user.FirstName = message.From.FirstName;
+                            db.Update(user);
+                            db.Save();
+                        }
                         return user;
                     }
                 }

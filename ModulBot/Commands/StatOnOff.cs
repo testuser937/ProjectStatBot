@@ -3,12 +3,9 @@ using ModulBot.Attributes;
 using System.Collections.Generic;
 using ModulBot.Interfaces;
 using ModulBot.Models;
-using ModulBot.Cards;
 using System.Text;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using System.Threading.Tasks;
 
 namespace ModulBot.Commands
 {
@@ -35,11 +32,14 @@ namespace ModulBot.Commands
                     _builder.Clear();
                 }                  
                     
-                InlineKeyboardButton button = new InlineKeyboardButton() { CallbackData = $"{stat.Id} {(int)Constants.ActionTypes.ShowTurn} {Constants.ShowButtons}", Text = $"{stat.Id} {stat.Name}" };
+                InlineKeyboardButton button = new InlineKeyboardButton() {
+                    CallbackData = $"{stat.Id} {(int)Constants.ActionTypes.ShowTurn}" +
+                    $" {Constants.ShowButtons}", Text = $"{stat.Id} {stat.Name}" };
                 Bot.StatButtons.Add(new List<InlineKeyboardButton> { button });
             }
             Bot.TextOnMessageWithButtons = "Настройка статистик:";
-            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Настройка статистик:", replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
+            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                "Настройка статистик:", replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
         }
 
         public StatOnOff()

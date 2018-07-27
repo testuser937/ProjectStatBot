@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Configuration;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
@@ -20,11 +20,10 @@ namespace ModulBot
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
+                 .UseStartup<Startup>()
                 .Build();
-    
 
-        public static void SendMessagesDaily()
+        public async static void SendMessagesDaily()
         {
             while (true)
             {
@@ -35,12 +34,12 @@ namespace ModulBot
                            int.Parse(timeParts[0]), int.Parse(timeParts[1]), int.Parse(timeParts[2]));
                 if (date <= dateNow)
                 {
-                    SendStat.SendStatistic();
-                    Thread.Sleep(24 * 60 * 60 * 1000);
+                    await SendStat.SendStatistic();
+                    Thread.Sleep((int)(24 * 60 * 60 * 1000 - (dateNow - date).TotalMilliseconds));
                 }
                 else
                 {
-                    Thread.Sleep((int)(date - dateNow).TotalSeconds * 1000);
+                    Thread.Sleep((int)(date - dateNow).TotalMilliseconds);
                 }
             }
         }

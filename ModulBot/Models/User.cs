@@ -1,5 +1,4 @@
-﻿using Telegram.Bot;
-using Telegram.Bot.Types;
+﻿using Telegram.Bot.Types;
 
 namespace ModulBot.Models
 {
@@ -10,7 +9,7 @@ namespace ModulBot.Models
         public string UserName { get; set; }
         public long ChatId { get; set; }
         public bool IsAdmin { get; set; }
-
+        public string FirstName { get; set; }
 
         public User()
         {
@@ -20,8 +19,9 @@ namespace ModulBot.Models
         {
             if (message != null)
             {
-                UserName = message.Chat.Username;
+                UserName = message.From.Username;
                 ChatId = message.Chat.Id;
+                FirstName = message.From.FirstName;
             }
         }
     }

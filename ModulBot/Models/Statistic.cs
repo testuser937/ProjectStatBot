@@ -13,11 +13,11 @@ namespace ModulBot.Models
             IsActive = isActive;
         }
 
-        public int Id { get; set; }
-        public string Name { get; set; }
+        public int Id { get; set; } //id в БД
+        public string Name { get; set; } //название
         public string Message { get; set; } // выдаваемое сообщение
         public string Query { get; set; } // sql-запрос
-        public List<long> Subscribers { get; set; }
-        public bool IsActive { get; set; }
+        public List<long> Subscribers { get; set; } // подписчики
+        public bool IsActive { get; set; } //включена ли статистика
     }
 }

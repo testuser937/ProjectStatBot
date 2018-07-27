@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using ModulBot.Attributes;
 using ModulBot.Database.PostgresRepositories;
 using ModulBot.Interfaces;
@@ -17,37 +16,51 @@ namespace ModulBot.Commands
         public string Description { get; set; }
         public List<string> CommandsName { get; set; }
         public bool IsAdmin { get; set; }
-
-        public static int Step { get => step; set => step = value; }
-
         private static int step = 0;
 
         public async void Run(Message message)
         {
-            switch (Step)
+            if (message.Text[0] == '/')
+            {
+                message.Text = message.Text.Substring(1);
+            }
+
+            switch (step)
             {
                 case 0:
+                    if (message.Chat.Id < 0) //в групповых чатах бот не видит обычных сообщений
+                    {
+                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "*Внимание!* В групповых" +
+                            " чатах перед ответом ставьте слэш \"*/*\", " +
+                            "т.к. бот не видит обычных сообщений.\nНапример: */да*, */1*, и т.д.",
+                            Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                    }
+
                     Bot.IsDialogStart = true;
-                    Step++;
-                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Введите название");
+                    step++;
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                        "Введите название");
 
                     break;
                 case 1:
                     UserState.statName = message.Text;
-                    Step++;
-                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Введите сообщение");
+                    step++;
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                        "Введите сообщение");
 
                     break;
                 case 2:
                     UserState.statMessage = message.Text;
-                    Step++;
-                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Введите SQL-запрос");
+                    step++;
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                        "Введите SQL-запрос");
 
                     break;
                 case 3:
                     UserState.statQuery = message.Text;
-                    Step++;
-                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Активировать статистику?<b>[да/нет]</b>\nПо умолчанию статистика будет активна", parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                    step++;
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                        "Активировать статистику?[да/нет]\nПо умолчанию статистика будет активна");
 
                     break;
                 case 4:
@@ -66,10 +79,9 @@ namespace ModulBot.Commands
                         $"Сообщение: {UserState.statMessage}\n" +
                         $"SQL-зарос: {UserState.statQuery}\n" +
                         $"Активировать: {UserState.statIsActive.ToString()}\n";
-                    Step++;
-                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, result + "Все верно?<b>[да/нет]</b>\n", parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
-
-
+                    step++;
+                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                        result + "Все верно?[да/нет]\n");
                     break;
                 case 5:
                     if (message.Text.ToLower() == "да")
@@ -77,25 +89,28 @@ namespace ModulBot.Commands
                         Bot.IsDialogStart = false;
 
                         var db = new PostgresStatsRepository();
-                        Statistic stat = new Statistic(UserState.statName, UserState.statMessage, UserState.statQuery, UserState.statIsActive);
+                        Statistic stat = new Statistic(UserState.statName,
+                            UserState.statMessage, UserState.statQuery, UserState.statIsActive);
                         db.Add(stat);
                         db.Save();
 
-                        Step = 0;
-                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Статистика создана");
-
-
+                        step = 0;
+                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                            "Статистика успешно создана");
                     }
                     else if (message.Text.ToLower() == "нет")
                     {
                         Bot.IsDialogStart = false;
-                        Step = 0;
-                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Попробуйте еще раз создать статистику с помощью команды /createstat");
+                        step = 0;
+                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                            "Попробуйте еще раз создать статистику с помощью команды /createstat");
 
                     }
                     else
                     {
-                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Команда не распознана. Введите <b>да</b> или <b>нет</b>", parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                            "Команда не распознана. Введите *\"да\"* или *\"нет\"*",
+                            Telegram.Bot.Types.Enums.ParseMode.Markdown);
                     }
                     break;
             }

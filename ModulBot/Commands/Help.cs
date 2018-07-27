@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Telegram.Bot.Types;
-using System.Threading.Tasks;
 
 
 namespace ModulBot.Commands
@@ -22,7 +21,8 @@ namespace ModulBot.Commands
         protected string CommandText { get; set; }
         public async void Run(Message message)
         {
-            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Список доступных команд:\n" + CommandText);
+            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                "Список доступных команд:\n" + CommandText);
         }
 
         public Help()

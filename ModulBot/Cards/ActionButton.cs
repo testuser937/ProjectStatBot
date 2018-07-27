@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using ModulBot.Interfaces;
-using ModulBot.Models;
 using ModulBot.Database.PostgresRepositories;
-using ModulBot.Commands;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using System.Threading.Tasks;
 using Npgsql;
-using ModulBot.Database;
-using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
 namespace ModulBot.Cards
 {
     public static class ActionButton
     {
-        private static IConfiguration Configuration;
-        public static async void DoAction(long chatId, int messageId, string[] buttonCallbackData)
+        public static async Task DoAction(long chatId, int messageId, string[] buttonCallbackData)
         {
             int statId = Convert.ToInt32(buttonCallbackData[0]);
             int actionType = Convert.ToInt32(buttonCallbackData[1]);
@@ -79,31 +72,7 @@ namespace ModulBot.Cards
                     }
                 case ((int)Constants.ActionTypes.GetStat):
                     {
-                        string _connStr = Configuration.GetConnectionString("PostgreSQL");
-                        int count = 0;
-                        var db = new PostgresStatsRepository();
-                        var selected_stat = db.GetById(statId);
-
-                        try
-                        {
-                            using (var conn = new NpgsqlConnection(_connStr))
-                            {
-                                conn.Open();
-                                string query = selected_stat.Query;
-                                var cmd = new NpgsqlCommand(query, conn);
-                                // Execute the query and obtain a result set
-                                NpgsqlDataReader dr = cmd.ExecuteReader();
-                                while (dr.Read())
-                                    count += 1;
-                            }
-                           
-
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                        }
-                        text = string.Format(selected_stat.Message, count);
+                        text = GetStat(statId);
                         break;
                     }
                 case ((int)Constants.ActionTypes.Back):
@@ -116,7 +85,7 @@ namespace ModulBot.Cards
             await Bot.BotClient.SendTextMessageAsync(chatId, text);
         }
 
-        public static async void ShowButtons(long chatId, int messageId, string[] buttonCallbackData)
+        public static async Task ShowButtons(long chatId, int messageId, string[] buttonCallbackData)
         {
             int statId = Convert.ToInt32(buttonCallbackData[0]);
             int actionType = Convert.ToInt32(buttonCallbackData[1]);
@@ -139,6 +108,31 @@ namespace ModulBot.Cards
             var bd = new PostgresStatsRepository();
             var stat = bd.GetById(statId);
             await Bot.BotClient.EditMessageTextAsync(new ChatId(chatId), messageId, "Настройка статистики: " + stat.Name, replyMarkup: new InlineKeyboardMarkup(Bot.NextButtons));
+        }
+        private static string GetStat(int statId)
+        {
+            string _connStr = Startup.GetConnectionString();
+            int count = 0;
+            var db = new PostgresStatsRepository();
+            var selected_stat = db.GetById(statId);
+
+            try
+            {
+                using (var conn = new NpgsqlConnection(_connStr))
+                {
+                    conn.Open();
+                    string query = selected_stat.Query;
+                    var cmd = new NpgsqlCommand(query, conn);
+                    NpgsqlDataReader dr = cmd.ExecuteReader();
+                    while (dr.Read())
+                        count += 1;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return string.Format(selected_stat.Message, count);
         }
     }
 }

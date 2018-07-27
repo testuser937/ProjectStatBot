@@ -2,30 +2,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
-using ModulBot.Database;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
 using Npgsql;
 using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
 namespace ModulBot
 {
-    public static class SendStat
+    public class SendStat
     {
-        private static IConfiguration Configuration;
-
-        public async static void SendStatistic()
+        protected SendStat(IConfiguration configuration)
         {
+            Configuration = configuration;
+        }
+
+        public static IConfiguration Configuration { get; set; }
+
+        public async static Task SendStatistic()
+        {
+            Dictionary<long, List<string>> _stats = new Dictionary<long, List<string>>(); //для рассылки статистик
             int _count = 0;
-            string _connStr = Configuration.GetConnectionString("PostgreSQL");
             try
             {
-                using (var conn = new NpgsqlConnection(_connStr))
+                using (var conn = new NpgsqlConnection(Startup.GetConnectionString()))
                 {
                     conn.Open();
-
                     NpgsqlDataReader dr;
                     foreach (var stat in DataModel.Statistics)
                     {
@@ -37,8 +38,10 @@ namespace ModulBot
                                 _count += 1;
                             foreach (var chatId in stat.Subscribers)
                             {
-                                await Bot.BotClient.SendTextMessageAsync(chatId, string.Format(stat.Message, _count));
-                                Thread.Sleep(100);
+                                if (!_stats.Keys.Contains(chatId))
+                                    _stats.Add(chatId, new List<string>());
+                                _stats[chatId].Add($"{stat.Name}:\n" + 
+                                    string.Format(stat.Message, _count) + "\n");
                             }
                             dr.Close();
                         }
@@ -49,6 +52,12 @@ namespace ModulBot
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+            }
+
+            foreach (KeyValuePair<long, List<string>> keyValue in _stats)
+            {
+                await Bot.BotClient.SendTextMessageAsync(keyValue.Key, "Рассылка статистики:\n"
+                    + string.Join('\n', keyValue.Value));
             }
 
         }
