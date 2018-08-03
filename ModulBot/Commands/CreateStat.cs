@@ -5,6 +5,7 @@ using ModulBot.Database.PostgresRepositories;
 using ModulBot.Interfaces;
 using ModulBot.Models;
 using Telegram.Bot.Types;
+using Npgsql;
 
 namespace ModulBot.Commands
 {
@@ -30,10 +31,7 @@ namespace ModulBot.Commands
                 case 0:
                     if (message.Chat.Id < 0) //в групповых чатах бот не видит обычных сообщений
                     {
-                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "*Внимание!* В групповых" +
-                            " чатах перед ответом ставьте слэш \"*/*\", " +
-                            "т.к. бот не видит обычных сообщений.\nНапример: */да*, */1*, и т.д.",
-                            Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, Constants.ChatMessage, Telegram.Bot.Types.Enums.ParseMode.Markdown);
                     }
 
                     Bot.IsDialogStart = true;
@@ -57,12 +55,30 @@ namespace ModulBot.Commands
 
                     break;
                 case 3:
-                    UserState.statQuery = message.Text;
-                    step++;
-                    await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
-                        "Активировать статистику?[да/нет]\nПо умолчанию статистика будет активна");
+                    using (var conn = new NpgsqlConnection(Startup.GetConnectionString()))
+                    {
+                        conn.Open();
+                        try
+                        {
+                            NpgsqlDataReader dr;
+                            var cmd = new NpgsqlCommand(message.Text, conn);
+                            dr = cmd.ExecuteReader();
+
+                            UserState.statQuery = message.Text;
+                            step++;
+                            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
+                                "Активировать статистику?[да/нет]\nПо умолчанию статистика будет активна");
+                        }
+                        catch (Exception ex)
+                        {
+                            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Произошла ошибка при выполнении запроса.+" +
+                                "\nИсправьте запрос и попробуйте еще раз" +
+                                "\nТекст ошибки :" + ex.Message);
+                        }
+                    }
 
                     break;
+
                 case 4:
 
                     if (message.Text.ToLower() == "нет")

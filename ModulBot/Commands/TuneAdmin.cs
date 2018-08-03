@@ -43,10 +43,7 @@ namespace ModulBot.Commands
                 case 0:
                     if (message.Chat.Id < 0) //в групповых чатах бот не видит обычных сообщений
                     {
-                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "*Внимание!* В групповых" +
-                            " чатах перед ответом ставьте слэш \"*/*\", " +
-                            "т.к. бот не видит обычных сообщений.\nНапример: */да*, */1*, и т.д.",
-                            Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, Constants.ChatMessage, Telegram.Bot.Types.Enums.ParseMode.Markdown);
                     }
 
                     Bot.IsSetAdminStart = true;
