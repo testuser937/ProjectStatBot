@@ -18,28 +18,11 @@ namespace ModulBot.Commands
         public bool IsAdmin { get; set; }
 
         public async void Run(Message message)
-        {
-            Bot.StatButtons = new List<List<InlineKeyboardButton>>();
-            var _builder = new StringBuilder("");
-            for (var i = 0; i < DataModel.Statistics.Count; i++)
-            {
-                var stat = DataModel.Statistics[i];
-                _builder.Append(stat.Name);
-                if (!stat.IsActive)
-                {
-                    _builder.Append("(Off)");
-                    stat.Name = _builder.ToString();
-                    _builder.Clear();
-                }                  
-                    
-                InlineKeyboardButton button = new InlineKeyboardButton() {
-                    CallbackData = $"{stat.Id} {(int)Constants.ActionTypes.ShowTurn}" +
-                    $" {Constants.ShowButtons}", Text = $"{stat.Id} {stat.Name}" };
-                Bot.StatButtons.Add(new List<InlineKeyboardButton> { button });
-            }
+        {                        
             Bot.TextOnMessageWithButtons = "Настройка статистик:";
+            Bot.LastCommand = "statonoff";
             await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
-                "Настройка статистик:", replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
+                "Настройка статистик:", Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: new InlineKeyboardMarkup(Bot.GenerateStatButtons(false,message.Chat.Id)));
         }
 
         public StatOnOff()

@@ -24,8 +24,6 @@ namespace ModulBot
         {
             // Add the whole configuration object here.
             services.AddSingleton<IConfiguration>(Configuration);
-
-            Bot.GetBotClientAsync().Wait();
             services.AddMvc();
         }
 
@@ -44,7 +42,6 @@ namespace ModulBot
             });
 
             Bot.GetBotClientAsync().Wait();
-
         }
 
         public static string GetConnectionString()

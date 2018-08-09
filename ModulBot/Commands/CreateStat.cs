@@ -29,10 +29,6 @@ namespace ModulBot.Commands
             switch (step)
             {
                 case 0:
-                    if (message.Chat.Id < 0) //в групповых чатах бот не видит обычных сообщений
-                    {
-                        await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, Constants.ChatMessage, Telegram.Bot.Types.Enums.ParseMode.Markdown);
-                    }
 
                     Bot.IsDialogStart = true;
                     step++;
@@ -71,7 +67,7 @@ namespace ModulBot.Commands
                         }
                         catch (Exception ex)
                         {
-                            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Произошла ошибка при выполнении запроса.+" +
+                            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Произошла ошибка при выполнении запроса." +
                                 "\nИсправьте запрос и попробуйте еще раз" +
                                 "\nТекст ошибки :" + ex.Message);
                         }

@@ -30,7 +30,7 @@ namespace ModulBot.Commands
                 if (user.ChatId > 0) // не берем групповые чаты
                 {
                     string _isAdmin = user.IsAdmin ? "admin" : "user";
-                    allUsers.Append($"{user.Id}. {user.FirstName} - ({_isAdmin})\n");
+                    allUsers.Append($"{user.Id}. {user.FirstName}({user.ChatId}) - ({_isAdmin})\n");
                 }
             }
             if (message.Text[0] == '/')

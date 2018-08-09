@@ -50,7 +50,7 @@ namespace ModulBot.Models
                 {
                     var db = new PostgresUserRepository();
 
-                    var user = db.GetAll().FirstOrDefault(x => x.ChatId == message.Chat.Id);
+                    var user = db.GetAll().FirstOrDefault(x => x.ChatId == message.From.Id);
                     if (user == null)
                     {
                         _newUser = new User(message);

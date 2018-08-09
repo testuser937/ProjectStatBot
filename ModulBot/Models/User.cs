@@ -19,9 +19,17 @@ namespace ModulBot.Models
         {
             if (message != null)
             {
-                UserName = message.From.Username;
                 ChatId = message.Chat.Id;
-                FirstName = message.From.FirstName;
+                FirstName = message.From.FirstName + message.From.LastName;
+                if (message.Chat.Type == Telegram.Bot.Types.Enums.ChatType.Private)
+                {
+                    UserName = message.From.Username;
+                }
+                else if (message.Chat.Type == Telegram.Bot.Types.Enums.ChatType.Group)
+                {
+                    UserName = "GroupChatBot";
+                }
+
             }
         }
     }

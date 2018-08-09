@@ -36,7 +36,12 @@ namespace ModulBot
             /// <summary>
             /// Получить выбранную статистику
             /// </summary>
-            GetStat = 8
+            GetStat = 8,
+            /// <summary>
+            /// Отображение новых кнопок - включить\выключить статистику
+            /// </summary>
+            UnsibscribeAll = 9
+
         }
 
         /// <summary>
@@ -58,6 +63,11 @@ namespace ModulBot
         /// Надпись отображающаяся на кнопке, отвечающая за отписку от статистики
         /// </summary>
         public const string Unsubscribe = "Отписаться";
+
+        /// <summary>
+        /// Надпись отображающаяся на кнопке, отвечающая за отписку от всех статистик
+        /// </summary>
+        public const string UnsubscribeAll = "Отписаться от всего";
 
         /// <summary>
         /// Надпись отображающаяся на кнопке, возвращающая на уровень вверх

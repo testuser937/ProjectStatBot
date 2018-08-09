@@ -20,7 +20,7 @@ namespace ModulBot.Controllers
                 return Ok();
             }
             else
-            {
+            {   
                 await MessageAction(update);
                 return Ok();
             }
@@ -39,7 +39,8 @@ namespace ModulBot.Controllers
                     await ButtonAction(update.CallbackQuery.Data, message.Chat.Id, message.MessageId);
                 }
 
-                else if (update.Message != null && update.Message.Type == MessageType.Text)
+                else if (update.Message != null && update.Message.Type == MessageType.Text && (update.Message.Chat.Type == ChatType.Group && (Bot.IsDialogStart || Bot.IsSetAdminStart|| update.Message.Text[0]=='/')
+                    || update.Message.Chat.Type == ChatType.Private))
                 {
                     var message = update.Message;
                     var str = message.Text.Trim();
@@ -62,7 +63,7 @@ namespace ModulBot.Controllers
                     {
                         command = "/" + command;
                     }
-                    if (command.Contains($"@{me.Username}"))
+                    if (command.Contains($"@{me.Username.ToLower()}"))
                     {
                         int startIndex = command.IndexOf('@');
                         command = command.Substring(0, startIndex);

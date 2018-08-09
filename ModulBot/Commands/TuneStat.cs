@@ -15,22 +15,10 @@ namespace ModulBot.Commands
 
         public async void Run(Message message)
         {
-            Bot.StatButtons = new List<List<InlineKeyboardButton>>();
-            for (var i = 0; i < DataModel.Statistics.Count; i++)
-            {
-                var stat = DataModel.Statistics[i];
-                if (stat.IsActive)
-                {
-                    InlineKeyboardButton button = new InlineKeyboardButton() {
-                        CallbackData = $"{stat.Id} {(int)Constants.ActionTypes.ShowSubs}" +
-                        $" {Constants.ShowButtons}", Text = stat.Name };
-                    // 1. Номер статистики, за которую отвечает кнопка 2.Номер действия 3.Тип кнопки                 
-                    Bot.StatButtons.Add(new List<InlineKeyboardButton> { button });
-                }
-            }
             Bot.TextOnMessageWithButtons = "Список статистик: ";
+            Bot.LastCommand = "tunestat";
             await Bot.BotClient.SendTextMessageAsync(message.Chat.Id,
-                Bot.TextOnMessageWithButtons, replyMarkup: new InlineKeyboardMarkup(Bot.StatButtons));
+                Bot.TextOnMessageWithButtons, replyMarkup: new InlineKeyboardMarkup(Bot.GenerateStatButtons(true,message.Chat.Id)));
         }
 
         public TuneStat()

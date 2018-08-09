@@ -8,7 +8,8 @@ using Telegram.Bot.Types;
 using ModulBot.Interfaces;
 using System.Reflection;
 using Telegram.Bot.Types.ReplyMarkups;
-using System.IO;
+using ModulBot.Models;
+using System.Text;
 
 namespace ModulBot
 {
@@ -21,6 +22,7 @@ namespace ModulBot
         private static bool isDialogStart = false;
         private static string textOnMessageWithButtons;
         private static bool isSetAdminStart = false;
+        private static string lastCommand;
 
         public static List<List<InlineKeyboardButton>> StatButtons { get => statbuttons;
             set => statbuttons = value; }        
@@ -32,7 +34,7 @@ namespace ModulBot
         public static string TextOnMessageWithButtons { get => textOnMessageWithButtons;
             set => textOnMessageWithButtons = value; }
         public static bool IsSetAdminStart { get => isSetAdminStart; set => isSetAdminStart = value; }
-
+        public static string LastCommand { get => lastCommand; set => lastCommand = value; }
         public static async Task<TelegramBotClient> GetBotClientAsync()
         {
             if (BotClient != null)
@@ -76,6 +78,62 @@ namespace ModulBot
                 }
 
             await Bot.BotClient.SendTextMessageAsync(chatId, "Попробуйте заново ввести команду /tunestat(/statonoff - для админа)");
+        }
+
+        public static List<List<InlineKeyboardButton>> GenerateStatButtons(bool isTunestat, long userId)
+        {
+            StatButtons = new List<List<InlineKeyboardButton>>();
+            if (isTunestat)
+            {
+                for (var i = 0; i < DataModel.Statistics.Count; i++)
+                {
+                    var _builder = new StringBuilder("");
+                    var stat = DataModel.Statistics[i];
+                    _builder.Append(stat.Name);                    
+                    if (stat.IsActive)
+                    {
+                        if (stat.Subscribers.Contains(userId))
+                        {
+                            _builder.Append("(sub)");
+                            stat.Name = _builder.ToString();
+                            _builder.Clear();
+                        }
+
+                        InlineKeyboardButton button = new InlineKeyboardButton()
+                        {
+                            CallbackData = $"{stat.Id} {(int)Constants.ActionTypes.ShowSubs}" +
+                            $" {Constants.ShowButtons}",
+                            Text = stat.Name
+                        };
+                        // 1. Номер статистики, за которую отвечает кнопка 2.Номер действия 3.Тип кнопки                 
+                        StatButtons.Add(new List<InlineKeyboardButton> { button });
+                    }
+                }
+            }
+            else
+            {
+                for (var i = 0; i < DataModel.Statistics.Count; i++)
+                {
+                    var _builder = new StringBuilder("");
+                    var stat = DataModel.Statistics[i];
+                    _builder.Append(stat.Name);
+                    if (!stat.IsActive)
+                    {
+                        _builder.Append("(Off)");
+                        stat.Name = _builder.ToString();
+                        _builder.Clear();
+                    }
+
+                    InlineKeyboardButton button = new InlineKeyboardButton()
+                    {
+                        CallbackData = $"{stat.Id} {(int)Constants.ActionTypes.ShowTurn}" +
+                        $" {Constants.ShowButtons}",
+                        Text = $"{stat.Id} {stat.Name}"
+                    };
+                    StatButtons.Add(new List<InlineKeyboardButton> { button });
+                }
+            }
+            return StatButtons;
         }
     }
 }
